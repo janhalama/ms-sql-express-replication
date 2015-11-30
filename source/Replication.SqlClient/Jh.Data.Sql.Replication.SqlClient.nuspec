@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Jh.Data.Sql.Replication.SqlClient</id>
+    <version>1.0.0.0</version>
+    <title>MS SQL Express replication library sqlclient implementation</title>
+    <authors>Jan Halama</authors>
+    <owners>Jan Halama</owners>
+    <licenseUrl>https://github.com/janhalama/ms-sql-express-replication/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/janhalama/ms-sql-express-replication</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Basic snapshot replication library</description>
+    <releaseNotes>First release</releaseNotes>
+    <copyright>Copyright Jan Halama 2015</copyright>
+    <tags>Replication SQL</tags>
+  </metadata>
+</package>
