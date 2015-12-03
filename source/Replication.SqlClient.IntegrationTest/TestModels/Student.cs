@@ -14,6 +14,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest.TestModels
         public byte[] Photo { get; set; }
         public decimal Height { get; set; }
         public float Weight { get; set; }
+        public int StandardId { get; set; }
         public Standard Standard { get; set; }
     }
 }

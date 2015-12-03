@@ -38,7 +38,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
         }
         public string GenerateUniqueDatabaseName(string namePrefix)
         {
-            return namePrefix + Guid.NewGuid().ToString().Replace('-', '_') + "_";
+            return namePrefix + "_" + Guid.NewGuid().ToString().Replace('-', '_');
         }
     }
 }
