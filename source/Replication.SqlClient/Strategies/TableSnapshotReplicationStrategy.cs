@@ -12,8 +12,8 @@ using System.Threading.Tasks;
 namespace Jh.Data.Sql.Replication.SqlClient.Strategies
 {
     /// <summary>
-    /// Replication strategy replicates tables truncates target database table and 
-    /// transfers all records from the source to the target database
+    /// Replication strategy truncates target database table and 
+    /// transfers all records from the source to the target database.
     /// </summary>
     public class TableSnapshotReplicationStrategy : IReplicationStrategy
     {
