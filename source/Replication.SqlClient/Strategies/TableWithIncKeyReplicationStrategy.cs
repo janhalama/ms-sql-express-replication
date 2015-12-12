@@ -14,6 +14,11 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
     /// <summary>
     /// Replication strategy suitable for tables with incremental primary key 
     /// with no updates on the source table records (only inserts)
+    /// 
+    /// Use case:
+    /// Production line software saves tests of the components produced on the line. Test results are saved to MS SQL Express database. 
+    /// MS SQL Express database tables are periodically replicated to enterprise SQL server.
+    /// Production line software inserts test results to database table and there are no update on the test result table.
     /// </summary>
     public class TableWithIncKeyReplicationStrategy : IReplicationStrategy
     {
