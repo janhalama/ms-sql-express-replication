@@ -60,9 +60,10 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbSchemaAnalyzer
                 using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
                 {
                     sqlConnection.Open();
-                    string commandText = @"SELECT COLUMN_NAME 
-                                           FROM [{0}].INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
-                                           WHERE TABLE_CATALOG = @catalog AND TABLE_SCHEMA = @schema AND TABLE_NAME = @table";
+                    string commandText = @"SELECT colUsage.COLUMN_NAME 
+                                           FROM [{0}].INFORMATION_SCHEMA.KEY_COLUMN_USAGE as colUsage
+                                           INNER JOIN [{0}].INFORMATION_SCHEMA.TABLE_CONSTRAINTS tabCon on tabCon.CONSTRAINT_NAME = colUsage.CONSTRAINT_NAME AND tabCon.CONSTRAINT_SCHEMA = colUsage.CONSTRAINT_SCHEMA 
+                                           WHERE colUsage.TABLE_CATALOG = @catalog AND colUsage.TABLE_SCHEMA = @schema AND colUsage.TABLE_NAME = @table AND tabCon.CONSTRAINT_TYPE = 'Primary Key'";
                     SqlCommand command = new SqlCommand(string.Format(commandText, catalog), sqlConnection);
                     command.Parameters.AddWithValue("@catalog", catalog);
                     command.Parameters.AddWithValue("@schema", schema);
