@@ -90,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TableSnapshotReplicationStrategyTest.cs" />
+    <Compile Include="TableWithIncKeyUpdateLastRowReplicationStrategyTest.cs" />
     <Compile Include="TableWithIncKeyReplicationStrategyTest.cs" />
     <Compile Include="TableValuesLoaderTest.cs" />
     <Compile Include="TableSchemaAnalyzerTest.cs" />

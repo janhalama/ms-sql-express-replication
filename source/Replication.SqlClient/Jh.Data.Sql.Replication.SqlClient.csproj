@@ -65,6 +65,7 @@
     <Compile Include="DbSchemaAnalyzer\DataContracts\ITable.cs" />
     <Compile Include="DbSchemaAnalyzer\ITableSchemaAnalyzer.cs" />
     <Compile Include="Strategies\TableSnapshotReplicationStrategy.cs" />
+    <Compile Include="Strategies\TableWithIncKeyUpdateLastRowReplicationStrategy.cs" />
     <Compile Include="Strategies\TableWithIncKeyReplicationStrategy.cs" />
     <Compile Include="DbSchemaAnalyzer\TableSchemaAnalyzer.cs" />
   </ItemGroup>
