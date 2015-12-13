@@ -26,7 +26,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbSchemaAnalyzer
                 using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
                 {
                     sqlConnection.Open();
-                    string commandText = @"USE {0}
+                    string commandText = @"USE [{0}]
                                            SELECT COLUMN_NAME, DATA_TYPE, COLUMNPROPERTY(object_id('{1}.{2}'), COLUMN_NAME, 'IsIdentity') as 'IsIdentity'
                                            FROM [{0}].INFORMATION_SCHEMA.COLUMNS
                                            WHERE TABLE_CATALOG = '{0}' AND TABLE_SCHEMA = '{1}' AND TABLE_NAME = '{2}'";

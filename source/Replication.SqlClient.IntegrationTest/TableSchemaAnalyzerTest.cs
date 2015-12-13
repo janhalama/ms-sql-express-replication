@@ -185,5 +185,23 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
                 _testDatabaseProvider.DropTestDatabase(DATABASE_NAME);
             }
         }
+        [Fact]
+        public void TestSchemaAnalyzisOnDatabaseWithSpaceCharacterInName()
+        {
+            string DATABASE_NAME = _testDatabaseProvider.GenerateUniqueDatabaseName("TestReplication ");
+            const string TABLE_NAME = "TestTable";
+            const string SCHEMA = "dbo";
+            _testDatabaseProvider.CreateTestDatabase(DATABASE_NAME);
+            try
+            {
+                CreateTestTable(CMD_CREATE_TABLE_NO_PRIMARY_KEY, DATABASE_NAME, SCHEMA, TABLE_NAME);
+                ITable table = _testedTableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, SCHEMA, TABLE_NAME);
+                Assert.NotNull(table);
+            }
+            finally
+            {
+                _testDatabaseProvider.DropTestDatabase(DATABASE_NAME);
+            }
+        }
     }
 }
