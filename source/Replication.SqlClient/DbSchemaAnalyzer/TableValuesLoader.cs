@@ -25,8 +25,8 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbSchemaAnalyzer
                 using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
                 {
                     sqlConnection.Open();
-                    string commandText = string.Format(@"USE {0}
-                                                         SELECT MAX({1}) FROM [{2}].[{3}]", table.Database, table.Columns.First(c => c.IsPrimaryKey).Name, table.Schema, table.Name);
+                    string commandText = string.Format(@"USE [{0}]
+                                                         SELECT MAX([{1}]) FROM [{2}].[{3}]", table.Database, table.Columns.First(c => c.IsPrimaryKey).Name, table.Schema, table.Name);
                     SqlCommand command = new SqlCommand(commandText, sqlConnection);
                     object res = command.ExecuteScalar();
                     return res is DBNull ? -1 : Convert.ToInt64(res);

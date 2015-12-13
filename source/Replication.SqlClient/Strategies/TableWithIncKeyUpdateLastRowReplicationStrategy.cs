@@ -67,8 +67,8 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                 using (SqlConnection sourceDatabaseSqlConnection = new SqlConnection(_sourceConnectionString))
                 {
                     sourceDatabaseSqlConnection.Open();
-                    SqlCommand command = new SqlCommand(string.Format(@"USE {0}
-                                                                        SELECT * FROM {1}.{2} WHERE {3} >= {4}",
+                    SqlCommand command = new SqlCommand(string.Format(@"USE [{0}]
+                                                                        SELECT * FROM [{1}].[{2}] WHERE [{3}] >= {4}",
                                                                         sourceTable.Database,
                                                                         sourceTable.Schema,
                                                                         sourceTable.Name,
@@ -89,8 +89,8 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                     if (targetDatabasePrimaryKeyMaxValue != -1 && reader.Read())
                                     {
                                         SqlCommand updateCommand = new SqlCommand("", targetDatabaseSqlConnection, transaction);
-                                        string updateCommandText = $@"USE {targetTable.Database}
-                                                                      UPDATE {targetTable.Schema}.{targetTable.Name}  SET ";
+                                        string updateCommandText = $@"USE [{targetTable.Database}]
+                                                                      UPDATE [{targetTable.Schema}].[{targetTable.Name}]  SET ";
                                         for (int i = 0; i < sourceTable.Columns.Length; i++)
                                         {
                                             if (sourceTable.Columns[i].IsIdentity) continue;
@@ -98,7 +98,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                             updateCommandText += $"{sourceTable.Columns[i].Name} = @{paramName}" + ((i < sourceTable.Columns.Length - 1) ? "," : " ");
                                             updateCommand.Parameters.AddWithValue(paramName, reader[sourceTable.Columns[i].Name]);
                                         }
-                                        updateCommandText += string.Format(" WHERE {0} = {1}", sourceTable.Columns.First(c => c.IsPrimaryKey).Name, targetDatabasePrimaryKeyMaxValue);
+                                        updateCommandText += string.Format(" WHERE [{0}] = {1}", sourceTable.Columns.First(c => c.IsPrimaryKey).Name, targetDatabasePrimaryKeyMaxValue);
                                         updateCommand.CommandText = updateCommandText;
                                         if (updateCommand.ExecuteNonQuery() != 1)
                                             throw new ReplicationException("Replication failed. Failed to update row in target database");
@@ -107,11 +107,11 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                     while (reader.Read())
                                     {
                                         SqlCommand insertCommand = new SqlCommand("", targetDatabaseSqlConnection, transaction);
-                                        string insertCommandText = $@"USE {targetTable.Database} 
+                                        string insertCommandText = $@"USE [{targetTable.Database}]
                                                                       {identityInsertSetup}
-                                                                      INSERT INTO {targetTable.Schema}.{targetTable.Name} ( ";
+                                                                      INSERT INTO [{targetTable.Schema}].[{targetTable.Name}] ( ";
                                         for (int i = 0; i < sourceTable.Columns.Length; i++)
-                                            insertCommandText += string.Format("{0}" + ((i < sourceTable.Columns.Length - 1) ? "," : ") VALUES ("), sourceTable.Columns[i].Name);
+                                            insertCommandText += string.Format("[{0}]" + ((i < sourceTable.Columns.Length - 1) ? "," : ") VALUES ("), sourceTable.Columns[i].Name);
                                         for (int i = 0; i < targetTable.Columns.Length; i++)
                                         {
                                             string paramName = string.Format("prm{0}", i);

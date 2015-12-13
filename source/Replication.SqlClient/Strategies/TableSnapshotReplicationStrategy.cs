@@ -50,7 +50,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                 using (SqlConnection sourceDatabaseConnection = new SqlConnection(_sourceConnectionString))
                 {
                     sourceDatabaseConnection.Open();
-                    SqlCommand command = new SqlCommand($@"USE {sourceTable.Database}
+                    SqlCommand command = new SqlCommand($@"USE [{sourceTable.Database}]
                                                            SELECT * FROM {sourceTable.Schema}.{sourceTable.Name}", sourceDatabaseConnection);
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
@@ -63,7 +63,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                 try
                                 {
                                     //unfortunatelly TRUNCATE can not be used for tables with foreign keys without deleting all foreign keys which is not easy to be done see: https://www.mssqltips.com/sqlservertip/3347/drop-and-recreate-all-foreign-key-constraints-in-sql-server/
-                                    SqlCommand deleteCommand = new SqlCommand($@"USE {targetTable.Database};
+                                    SqlCommand deleteCommand = new SqlCommand($@"USE [{targetTable.Database}]
                                                                                  ALTER TABLE {targetTable.Schema}.{targetTable.Name} NOCHECK CONSTRAINT ALL;
                                                                                  DELETE FROM {targetTable.Schema}.{targetTable.Name};
                                                                                  ALTER TABLE {targetTable.Schema}.{targetTable.Name} WITH CHECK CHECK CONSTRAINT ALL;");
@@ -74,15 +74,15 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                     while (reader.Read())
                                     {
                                         SqlCommand insertCommand = new SqlCommand("", targetDatabaseConnection, transaction);
-                                        string insertCommandText = $@"USE {targetTable.Database}
+                                        string insertCommandText = $@"USE [{targetTable.Database}]
                                                                       {identityInsertSetup} 
                                                                       INSERT INTO {targetTable.Schema}.{targetTable.Name} ( ";
                                         for (int i = 0; i < sourceTable.Columns.Length; i++)
-                                            insertCommandText += sourceTable.Columns[i].Name + ((i < sourceTable.Columns.Length - 1) ? "," : ") VALUES (");
+                                            insertCommandText += $"[{sourceTable.Columns[i].Name}] {((i < sourceTable.Columns.Length - 1) ? "," : ") VALUES (")}";
                                         for (int i = 0; i < sourceTable.Columns.Length; i++)
                                         {
                                             string paramName = $"prm{i}";
-                                            insertCommandText += string.Format("@" + paramName + ((i < sourceTable.Columns.Length - 1) ? "," : ")"));
+                                            insertCommandText += $"@{paramName} {((i < sourceTable.Columns.Length - 1) ? "," : ")")}";
                                             insertCommand.Parameters.AddWithValue(paramName, reader[sourceTable.Columns[i].Name]);
                                         }
                                         insertCommand.CommandText = insertCommandText;

@@ -68,7 +68,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                 using (SqlConnection sourceDatabaseSqlConnection = new SqlConnection(_sourceConnectionString))
                 {
                     sourceDatabaseSqlConnection.Open();
-                    SqlCommand command = new SqlCommand(string.Format(@"USE {0}
+                    SqlCommand command = new SqlCommand(string.Format(@"USE [{0}]
                                                                         SELECT * FROM {1}.{2} WHERE {3} > {4}",
                                                                         sourceTable.Database,
                                                                         sourceTable.Schema,
@@ -90,11 +90,11 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                     {
                                         SqlCommand insertCommand = new SqlCommand("", targetDatabaseSqlConnection, transaction);
                                         string identityInsertSetup = targetTable.Columns.Any(c => c.IsIdentity) ?$"SET IDENTITY_INSERT {targetTable.Schema}.{targetTable.Name} ON":"";
-                                        string insertCommandText = string.Format(@"USE {0} 
+                                        string insertCommandText = string.Format(@"USE [{0}] 
                                                                                    {3}
-                                                                                   INSERT INTO {1}.{2} ( ", targetTable.Database, targetTable.Schema, targetTable.Name, identityInsertSetup);
+                                                                                   INSERT INTO [{1}].[{2}] ( ", targetTable.Database, targetTable.Schema, targetTable.Name, identityInsertSetup);
                                         for (int i = 0; i < sourceTable.Columns.Length; i++)
-                                            insertCommandText += string.Format("{0}" + ((i < sourceTable.Columns.Length - 1) ? "," : ") VALUES ("), sourceTable.Columns[i].Name);
+                                            insertCommandText += string.Format("[{0}]" + ((i < sourceTable.Columns.Length - 1) ? "," : ") VALUES ("), sourceTable.Columns[i].Name);
                                         for (int i = 0; i < targetTable.Columns.Length; i++)
                                         {
                                             string paramName = string.Format("prm{0}", i);
