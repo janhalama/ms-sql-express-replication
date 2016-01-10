@@ -64,9 +64,9 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                 {
                                     //unfortunatelly TRUNCATE can not be used for tables with foreign keys without deleting all foreign keys which is not easy to be done see: https://www.mssqltips.com/sqlservertip/3347/drop-and-recreate-all-foreign-key-constraints-in-sql-server/
                                     SqlCommand deleteCommand = new SqlCommand($@"USE [{targetTable.Database}]
-                                                                                 ALTER TABLE {targetTable.Schema}.{targetTable.Name} NOCHECK CONSTRAINT ALL;
-                                                                                 DELETE FROM {targetTable.Schema}.{targetTable.Name};
-                                                                                 ALTER TABLE {targetTable.Schema}.{targetTable.Name} WITH CHECK CHECK CONSTRAINT ALL;");
+                                                                                 --EXEC sp_MSforeachtable @command1=""ALTER TABLE ? NOCHECK CONSTRAINT ALL""
+                                                                                 DELETE FROM {targetTable.Schema}.{targetTable.Name}
+                                                                                 --EXEC sp_MSforeachtable @command1=""ALTER TABLE ? CHECK CONSTRAINT ALL""");
                                     deleteCommand.Connection = targetDatabaseConnection;
                                     deleteCommand.Transaction = transaction;
                                     deleteCommand.ExecuteNonQuery();
@@ -107,7 +107,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
             catch (Exception ex)
             {
                 _log.Error("Replication exception", ex);
-                throw;
+                throw new ReplicationException($"Snapshot replication failed see inner exception | table {sourceTable.Schema}.{sourceTable.Name}", ex);
             }
         }
     }
