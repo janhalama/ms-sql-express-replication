@@ -143,7 +143,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                 if (ex is ReplicationException)
                     throw;
                 else
-                    throw new ReplicationException("Replication failed see inner exception", ex);
+                    throw new ReplicationException($"Replication failed see inner exception | table {sourceTable.Schema}.{sourceTable.Name}", ex);
             }
         }
     }

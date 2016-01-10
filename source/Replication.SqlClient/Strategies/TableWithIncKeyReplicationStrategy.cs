@@ -122,11 +122,11 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
             }
             catch (Exception ex)
             {
-                _log.Error(string.Format("Replicate exception | table: {0}", sourceTable.Name), ex);
+                _log.Error(string.Format("Replication exception | table: {0}", sourceTable.Name), ex);
                 if (ex is ReplicationException)
                     throw;
                 else
-                    throw new ReplicationException("Replication failed see inner exception", ex);
+                    throw new ReplicationException($"Replication failed see inner exception | table {sourceTable.Schema}.{sourceTable.Name}", ex);
             }
         }
     }
