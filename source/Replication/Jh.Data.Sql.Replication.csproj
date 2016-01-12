@@ -43,7 +43,6 @@
     <Compile Include="DataContracts\Enums\ArticleType.cs" />
     <Compile Include="DataContracts\IReplicationArticle.cs" />
     <Compile Include="IReplicationStrategy.cs" />
-    <Compile Include="IReplicationTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReplicationException.cs" />
   </ItemGroup>

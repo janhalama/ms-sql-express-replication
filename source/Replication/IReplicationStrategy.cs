@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Jh.Data.Sql.Replication
 {
+    /// <summary>
+    /// Replication strategy interface
+    /// </summary>
     public interface IReplicationStrategy
     {
         /// <summary>
