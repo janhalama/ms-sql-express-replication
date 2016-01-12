@@ -41,11 +41,11 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                        c.DataType == System.Data.SqlDbType.SmallInt ||
                                        c.DataType == System.Data.SqlDbType.Int ||
                                        c.DataType == System.Data.SqlDbType.BigInt)))
-                throw new ReplicationException("Table doesn't contain primary key column or the type of the primary key column is not TinyInt or SmallInt or Int or BigInt");
+                throw new ReplicationException($"Table {sourceTable.Name} doesn't contain primary key column or the type of the primary key column is not TinyInt or SmallInt or Int or BigInt");
             //TODO: test that primary key is incremented (IDENTITY SEED is set to true on the table)
             IReplicationAnalyzer replicationAnalyzer = new ReplicationAnalyzer(_log);
             if (!replicationAnalyzer.AreTableSchemasReplicationCompliant(sourceTable, targetTable))
-                throw new ReplicationException("Source and target table are not replication compliant (there are schema differences in those tables)");
+                throw new ReplicationException($"Source and target table {sourceTable.Name} are not replication compliant (there are schema differences in those tables)");
         }
 
         void IReplicationStrategy.Replicate(IReplicationArticle article)
