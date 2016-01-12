@@ -1,6 +1,7 @@
 ﻿using Common.Logging;
-using Jh.Data.Sql.Replication.SqlClient.DbSchemaAnalyzer;
-using Jh.Data.Sql.Replication.SqlClient.DbSchemaAnalyzer.DataContracts;
+using Jh.Data.Sql.Replication.SqlClient.DbTools;
+using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
+using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
 using Moq;
 using System;
 using System.Collections.Generic;

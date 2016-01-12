@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Jh.Data.Sql.Replication.SqlClient.DbSchemaAnalyzer.DataContracts
+namespace Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts
 {
     internal interface IColumn
     {

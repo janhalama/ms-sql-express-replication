@@ -1,8 +1,8 @@
 ﻿using Common.Logging;
 using EntityFramework.BulkInsert.Extensions;
 using Jh.Data.Sql.Replication.DataContracts;
-using Jh.Data.Sql.Replication.SqlClient.DbSchemaAnalyzer;
-using Jh.Data.Sql.Replication.SqlClient.DbSchemaAnalyzer.DataContracts;
+using Jh.Data.Sql.Replication.SqlClient.DbTools;
+using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
 using Jh.Data.Sql.Replication.SqlClient.IntegrationTest.TestModels;
 using Moq;
 using System;
@@ -166,7 +166,6 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
                 _testDatabaseProvider.CreateTestDatabase(TARGET_DATABASE_NAME);
                 try
                 {
-                    Student student;
                     using (var testContext = new TestContext(_connectionString + $";Database={SOURCE_DATABASE_NAME}"))
                     {
                         var standard = new Standard() { StandardName = "Standard" };

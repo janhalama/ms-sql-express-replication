@@ -1,5 +1,6 @@
 ﻿using Common.Logging;
-using Jh.Data.Sql.Replication.SqlClient.DbSchemaAnalyzer.DataContracts;
+using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
+using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -7,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Jh.Data.Sql.Replication.SqlClient.DbSchemaAnalyzer
+namespace Jh.Data.Sql.Replication.SqlClient.DbTools
 {
     internal class ReplicationAnalyzer : IReplicationAnalyzer
     {

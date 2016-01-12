@@ -1,7 +1,8 @@
 ﻿using Common.Logging;
 using Jh.Data.Sql.Replication.DataContracts;
-using Jh.Data.Sql.Replication.SqlClient.DbSchemaAnalyzer;
-using Jh.Data.Sql.Replication.SqlClient.DbSchemaAnalyzer.DataContracts;
+using Jh.Data.Sql.Replication.SqlClient.DbTools;
+using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
+using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -62,11 +63,11 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                 int syncedRows = 0;
                                 try
                                 {
-                                    //unfortunatelly TRUNCATE can not be used for tables with foreign keys without deleting all foreign keys which is not easy to be done see: https://www.mssqltips.com/sqlservertip/3347/drop-and-recreate-all-foreign-key-constraints-in-sql-server/
-                                    SqlCommand deleteCommand = new SqlCommand($@"USE [{targetTable.Database}]
-                                                                                 --EXEC sp_MSforeachtable @command1=""ALTER TABLE ? NOCHECK CONSTRAINT ALL""
-                                                                                 DELETE FROM {targetTable.Schema}.{targetTable.Name}
-                                                                                 --EXEC sp_MSforeachtable @command1=""ALTER TABLE ? CHECK CONSTRAINT ALL""");
+                                    string deleteSql = $@"USE [{targetTable.Database}]
+                                                  TRUNCATE TABLE {targetTable.Schema}.{targetTable.Name}";
+                                    //TODO: inject IForeignKeyDropRecreateScriptProvider via constructor
+                                    //IForeignKeysDropCreateScriptProvider foreignKeyDropRecreateScriptWrapperProvider = new ForeignKeysDropCreateScriptProvider();
+                                    SqlCommand deleteCommand = new SqlCommand(deleteSql);
                                     deleteCommand.Connection = targetDatabaseConnection;
                                     deleteCommand.Transaction = transaction;
                                     deleteCommand.ExecuteNonQuery();

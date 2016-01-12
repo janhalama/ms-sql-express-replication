@@ -1,7 +1,7 @@
 ﻿using Common.Logging;
 using Jh.Data.Sql.Replication.DataContracts;
-using Jh.Data.Sql.Replication.SqlClient.DbSchemaAnalyzer;
-using Jh.Data.Sql.Replication.SqlClient.DbSchemaAnalyzer.DataContracts;
+using Jh.Data.Sql.Replication.SqlClient.DbTools;
+using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
 using Jh.Data.Sql.Replication.SqlClient.IntegrationTest.TestModels;
 using Moq;
 using System;

@@ -89,6 +89,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ForeignKeysDropCreateScriptProviderTest.cs" />
     <Compile Include="TableSnapshotReplicationStrategyTest.cs" />
     <Compile Include="TableWithIncKeyUpdateLastRowReplicationStrategyTest.cs" />
     <Compile Include="TableWithIncKeyReplicationStrategyTest.cs" />
@@ -102,7 +103,9 @@
     <Compile Include="TestModels\Student.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
