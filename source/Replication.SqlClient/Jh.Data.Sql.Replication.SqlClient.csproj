@@ -38,8 +38,8 @@
       <HintPath>..\packages\Common.Logging.Core.3.3.1\lib\net40\Common.Logging.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Jh.Data.Sql.Replication, Version=1.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jh.Data.Sql.Replication.1.4.0.0\lib\net452\Jh.Data.Sql.Replication.dll</HintPath>
+    <Reference Include="Jh.Data.Sql.Replication, Version=1.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Jh.Data.Sql.Replication.1.5.0.0\lib\net452\Jh.Data.Sql.Replication.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
