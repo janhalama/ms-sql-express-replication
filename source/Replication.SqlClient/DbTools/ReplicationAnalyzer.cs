@@ -17,10 +17,10 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
         {
             _log = log;
         }
-        bool IReplicationAnalyzer.AreTableSchemasReplicationCompliant(ITable sourceTable, ITable targetTable)
+        bool IReplicationAnalyzer.AreTableSchemasReplicationCompliant(Table sourceTable, Table targetTable)
         {
             //All columns in source table has to contain target table
-            foreach (IColumn sourceColumn in sourceTable.Columns)
+            foreach (Column sourceColumn in sourceTable.Columns)
             {
                 if (!targetTable.Columns.Any(c => c.Name == sourceColumn.Name && c.DataType == sourceColumn.DataType && c.IsPrimaryKey == sourceColumn.IsPrimaryKey))
                     return false;

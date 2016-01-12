@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts
 {
-    internal class Column : IColumn
+    internal class Column
     {
         public string Name { get; set; }
         public bool IsPrimaryKey { get; set; }

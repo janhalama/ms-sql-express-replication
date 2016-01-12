@@ -89,7 +89,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
                 InsertIntoTable(DATABASE_NAME, SCHEMA, TABLE_NAME, 1, "some text");
                 InsertIntoTable(DATABASE_NAME, SCHEMA, TABLE_NAME, 100, "some text");
                 InsertIntoTable(DATABASE_NAME, SCHEMA, TABLE_NAME, 5, "some text");
-                ITable table = _tableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, SCHEMA, TABLE_NAME);
+                Table table = _tableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, SCHEMA, TABLE_NAME);
                 Assert.Equal(100, _tableValuesLoader.GetPrimaryKeyMaxValue(table));
             }
             finally
@@ -108,7 +108,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
             try
             {
                 CreateTable(DATABASE_NAME, SCHEMA, TABLE_NAME);
-                ITable table = _tableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, SCHEMA, TABLE_NAME);
+                Table table = _tableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, SCHEMA, TABLE_NAME);
                 Assert.Equal(-1, _tableValuesLoader.GetPrimaryKeyMaxValue(table));
             }
             finally

@@ -18,16 +18,18 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
     /// </summary>
     public class TableSnapshotReplicationStrategy : IReplicationStrategy
     {
-        string _sourceConnectionString;
-        string _targetConnectionString;
-        ILog _log;
-        public TableSnapshotReplicationStrategy(string sourceConnectionString, string targetConnectionString, ILog log)
+        readonly string _sourceConnectionString;
+        readonly string _targetConnectionString;
+        readonly ILog _log;
+        readonly IForeignKeysDropCreateScriptProvider _foreignKeysDropCreateScriptProvider;
+        public TableSnapshotReplicationStrategy(string sourceConnectionString, string targetConnectionString, ILog log, IForeignKeysDropCreateScriptProvider foreignKeysDropCreateScriptProvider)
         {
             _sourceConnectionString = sourceConnectionString;
             _targetConnectionString = targetConnectionString;
             _log = log;
+            _foreignKeysDropCreateScriptProvider = foreignKeysDropCreateScriptProvider;
         }
-        void CheckReplicationPrerequisities(IReplicationArticle article, ITable sourceTable, ITable targetTable)
+        void CheckReplicationPrerequisities(IReplicationArticle article, Table sourceTable, Table targetTable)
         {
             IReplicationAnalyzer replicationAnalyzer = new ReplicationAnalyzer(_log);
             if (!replicationAnalyzer.AreTableSchemasReplicationCompliant(sourceTable, targetTable))
@@ -38,16 +40,17 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
             if (article.ArticleType != DataContracts.Enums.eArticleType.TABLE)
                 throw new ArgumentException("Only ArticleType = eArticleType.TABLE supported by this strategy");
             ITableSchemaAnalyzer sourceTableAnalyzer = new TableSchemaAnalyzer(_sourceConnectionString, _log);
-            ITable sourceTable = sourceTableAnalyzer.GetTableInfo(article.SourceDatabaseName, article.SourceSchema, article.ArticleName);
+            Table sourceTable = sourceTableAnalyzer.GetTableInfo(article.SourceDatabaseName, article.SourceSchema, article.ArticleName);
             ITableSchemaAnalyzer targetTableAnalyzer = new TableSchemaAnalyzer(_targetConnectionString, _log);
-            ITable targetTable = targetTableAnalyzer.GetTableInfo(article.TargetDatabaseName, article.TargetSchema, article.ArticleName);
+            Table targetTable = targetTableAnalyzer.GetTableInfo(article.TargetDatabaseName, article.TargetSchema, article.ArticleName);
             CheckReplicationPrerequisities(article, sourceTable, targetTable);
             Replicate(sourceTable, targetTable);
         }
-        private void Replicate(ITable sourceTable, ITable targetTable)
+        private void Replicate(Table sourceTable, Table targetTable)
         {
             try
             {
+                var scriptContainer = _foreignKeysDropCreateScriptProvider.GenerateScripts(targetTable.Database);
                 using (SqlConnection sourceDatabaseConnection = new SqlConnection(_sourceConnectionString))
                 {
                     sourceDatabaseConnection.Open();
@@ -63,34 +66,17 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                 int syncedRows = 0;
                                 try
                                 {
-                                    string deleteSql = $@"USE [{targetTable.Database}]
-                                                  TRUNCATE TABLE {targetTable.Schema}.{targetTable.Name}";
-                                    //TODO: inject IForeignKeyDropRecreateScriptProvider via constructor
-                                    //IForeignKeysDropCreateScriptProvider foreignKeyDropRecreateScriptWrapperProvider = new ForeignKeysDropCreateScriptProvider();
-                                    SqlCommand deleteCommand = new SqlCommand(deleteSql);
-                                    deleteCommand.Connection = targetDatabaseConnection;
-                                    deleteCommand.Transaction = transaction;
-                                    deleteCommand.ExecuteNonQuery();
+                                    ExecuteNonQuerySqlCommand(scriptContainer.DropScript, targetDatabaseConnection, transaction);
+                                    string truncateSql = $@"USE [{targetTable.Database}]
+                                                            TRUNCATE TABLE {targetTable.Schema}.{targetTable.Name}";
+                                    ExecuteNonQuerySqlCommand(truncateSql, targetDatabaseConnection, transaction);
                                     string identityInsertSetup = targetTable.Columns.Any(c => c.IsIdentity) ? $"SET IDENTITY_INSERT {targetTable.Schema}.{targetTable.Name} ON" : "";
                                     while (reader.Read())
                                     {
-                                        SqlCommand insertCommand = new SqlCommand("", targetDatabaseConnection, transaction);
-                                        string insertCommandText = $@"USE [{targetTable.Database}]
-                                                                      {identityInsertSetup} 
-                                                                      INSERT INTO {targetTable.Schema}.{targetTable.Name} ( ";
-                                        for (int i = 0; i < sourceTable.Columns.Length; i++)
-                                            insertCommandText += $"[{sourceTable.Columns[i].Name}] {((i < sourceTable.Columns.Length - 1) ? "," : ") VALUES (")}";
-                                        for (int i = 0; i < sourceTable.Columns.Length; i++)
-                                        {
-                                            string paramName = $"prm{i}";
-                                            insertCommandText += $"@{paramName} {((i < sourceTable.Columns.Length - 1) ? "," : ")")}";
-                                            insertCommand.Parameters.AddWithValue(paramName, reader[sourceTable.Columns[i].Name]);
-                                        }
-                                        insertCommand.CommandText = insertCommandText;
-                                        if (insertCommand.ExecuteNonQuery() != 1)
-                                            throw new ReplicationException("Replication error: Failed to insert row into target database");
+                                        NewMethod(sourceTable, targetTable, reader, targetDatabaseConnection, transaction, identityInsertSetup);
                                         syncedRows++;
                                     }
+                                    ExecuteNonQuerySqlCommand(scriptContainer.CreateScript, targetDatabaseConnection, transaction);
                                 }
                                 catch (Exception ex)
                                 {
@@ -110,6 +96,32 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                 _log.Error("Replication exception", ex);
                 throw new ReplicationException($"Snapshot replication failed see inner exception | table {sourceTable.Schema}.{sourceTable.Name}", ex);
             }
+        }
+
+        private static void NewMethod(Table sourceTable, Table targetTable, SqlDataReader reader, SqlConnection targetDatabaseConnection, SqlTransaction transaction, string identityInsertSetup)
+        {
+            SqlCommand insertCommand = new SqlCommand("", targetDatabaseConnection, transaction);
+            string insertCommandText = $@"USE [{targetTable.Database}]
+                                                                      {identityInsertSetup} 
+                                                                      INSERT INTO {targetTable.Schema}.{targetTable.Name} ( ";
+            for (int i = 0; i < sourceTable.Columns.Length; i++)
+                insertCommandText += $"[{sourceTable.Columns[i].Name}] {((i < sourceTable.Columns.Length - 1) ? "," : ") VALUES (")}";
+            for (int i = 0; i < sourceTable.Columns.Length; i++)
+            {
+                string paramName = $"prm{i}";
+                insertCommandText += $"@{paramName} {((i < sourceTable.Columns.Length - 1) ? "," : ")")}";
+                insertCommand.Parameters.AddWithValue(paramName, reader[sourceTable.Columns[i].Name]);
+            }
+            insertCommand.CommandText = insertCommandText;
+            if (insertCommand.ExecuteNonQuery() != 1)
+                throw new ReplicationException("Replication error: Failed to insert row into target database");
+        }
+
+        private static int ExecuteNonQuerySqlCommand(string sqlCommandText, SqlConnection targetDatabaseConnection, SqlTransaction transaction)
+        {
+            SqlCommand deleteForeignKeysConstraintsCmd = new SqlCommand(sqlCommandText, targetDatabaseConnection);
+            deleteForeignKeysConstraintsCmd.Transaction = transaction;
+            return deleteForeignKeysConstraintsCmd.ExecuteNonQuery();
         }
     }
 }

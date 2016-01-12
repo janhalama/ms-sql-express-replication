@@ -19,7 +19,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
             _connectionString = connectionString;
             _log = log;
         }
-        IColumn[] ITableSchemaAnalyzer.GetTableColumns(string catalog, string schema, string table)
+        Column[] ITableSchemaAnalyzer.GetTableColumns(string catalog, string schema, string table)
         {
             try
             {
@@ -34,7 +34,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
                     SqlCommand command = new SqlCommand(string.Format(commandText, catalog, schema, table), sqlConnection);
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        List<IColumn> res = new List<IColumn>();
+                        List<Column> res = new List<Column>();
                         while (reader.Read())
                         {
                             System.Data.SqlDbType columnType;
@@ -84,7 +84,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
             
         }
 
-        ITable ITableSchemaAnalyzer.GetTableInfo(string database, string schema, string table)
+        Table ITableSchemaAnalyzer.GetTableInfo(string database, string schema, string table)
         {
             return new Table()
             {

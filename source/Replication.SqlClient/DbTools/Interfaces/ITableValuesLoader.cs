@@ -2,8 +2,16 @@
 
 namespace Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces
 {
+    /// <summary>
+    /// Provides methods for loading some table values
+    /// </summary>
     internal interface ITableValuesLoader
     {
-        long GetPrimaryKeyMaxValue(ITable table);
+        /// <summary>
+        /// Gets the primary key maximum value.
+        /// </summary>
+        /// <param name="table">The table.</param>
+        /// <returns></returns>
+        long GetPrimaryKeyMaxValue(Table table);
     }
 }

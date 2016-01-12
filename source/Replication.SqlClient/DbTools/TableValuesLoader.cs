@@ -19,7 +19,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
             _connectionString = connectionString;
             _log = log;
         }
-        public long GetPrimaryKeyMaxValue(ITable table)
+        public long GetPrimaryKeyMaxValue(Table table)
         {
             try
             {

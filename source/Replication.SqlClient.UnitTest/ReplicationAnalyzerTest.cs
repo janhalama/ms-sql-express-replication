@@ -23,19 +23,19 @@ namespace Jh.Data.Sql.Replication.SqlClient.UnitTest
         public void AreTableSchemasReplicationCompliant_TestDifferentColumnTypes()
         {
             IReplicationAnalyzer replicationAnalyzer = new ReplicationAnalyzer(_logMock.Object);
-            ITable sourceTable = new Table()
+            Table sourceTable = new Table()
             {
                 Name = "TestTable",
-                Columns = new IColumn[]
+                Columns = new Column[]
                 {
                     new Column() {Name = "Column1", IsPrimaryKey = false, DataType = System.Data.SqlDbType.Int },
                     new Column() {Name = "Column2", IsPrimaryKey = false, DataType = System.Data.SqlDbType.Int }
                 }
             };
-            ITable targetTable = new Table()
+            Table targetTable = new Table()
             {
                 Name = "TestTable",
-                Columns = new IColumn[]
+                Columns = new Column[]
                 {
                     new Column() {Name = "Column1", IsPrimaryKey = false, DataType = System.Data.SqlDbType.Int },
                     new Column() {Name = "Column2", IsPrimaryKey = false, DataType = System.Data.SqlDbType.BigInt }
@@ -47,20 +47,20 @@ namespace Jh.Data.Sql.Replication.SqlClient.UnitTest
         public void AreTableSchemasReplicationCompliant_TestNewColumnInSourceDatabase()
         {
             IReplicationAnalyzer replicationAnalyzer = new ReplicationAnalyzer(_logMock.Object);
-            ITable sourceTable = new Table()
+            Table sourceTable = new Table()
             {
                 Name = "TestTable",
-                Columns = new IColumn[]
+                Columns = new Column[]
                 {
                     new Column() {Name = "Column1", IsPrimaryKey = false, DataType = System.Data.SqlDbType.Int },
                     new Column() {Name = "Column2", IsPrimaryKey = false, DataType = System.Data.SqlDbType.Int },
                     new Column() {Name = "Column3", IsPrimaryKey = false, DataType = System.Data.SqlDbType.Int }
                 }
             };
-            ITable targetTable = new Table()
+            Table targetTable = new Table()
             {
                 Name = "TestTable",
-                Columns = new IColumn[]
+                Columns = new Column[]
                 {
                     new Column() {Name = "Column1", IsPrimaryKey = false, DataType = System.Data.SqlDbType.Int },
                     new Column() {Name = "Column2", IsPrimaryKey = false, DataType = System.Data.SqlDbType.Int }
@@ -72,19 +72,19 @@ namespace Jh.Data.Sql.Replication.SqlClient.UnitTest
         public void AreTableSchemasReplicationCompliant_TestHappyPath()
         {
             IReplicationAnalyzer replicationAnalyzer = new ReplicationAnalyzer(_logMock.Object);
-            ITable sourceTable = new Table()
+            Table sourceTable = new Table()
             {
                 Name = "TestTable",
-                Columns = new IColumn[]
+                Columns = new Column[]
                 {
                     new Column() {Name = "Column1", IsPrimaryKey = false, DataType = System.Data.SqlDbType.Int },
                     new Column() {Name = "Column2", IsPrimaryKey = false, DataType = System.Data.SqlDbType.Int }
                 }
             };
-            ITable targetTable = new Table()
+            Table targetTable = new Table()
             {
                 Name = "TestTable",
-                Columns = new IColumn[]
+                Columns = new Column[]
                 {
                     new Column() {Name = "Column1", IsPrimaryKey = false, DataType = System.Data.SqlDbType.Int },
                     new Column() {Name = "Column2", IsPrimaryKey = false, DataType = System.Data.SqlDbType.Int }

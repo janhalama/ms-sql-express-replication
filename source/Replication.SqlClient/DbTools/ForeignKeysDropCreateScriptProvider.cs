@@ -1,4 +1,5 @@
-﻿using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
+﻿using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
+using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -8,18 +9,19 @@ using System.Threading.Tasks;
 
 namespace Jh.Data.Sql.Replication.SqlClient.DbTools
 {
+    /// <summary>
+    /// Implementation of IForeignKeysDropCreateScriptProvider
+    /// </summary>
     public class ForeignKeysDropCreateScriptProvider : IForeignKeysDropCreateScriptProvider
     {
         string _connectionString;
-        string _databaseName;
-        public ForeignKeysDropCreateScriptProvider(string connectionString, string databaseName)
+        public ForeignKeysDropCreateScriptProvider(string connectionString)
         {
             _connectionString = connectionString;
-            _databaseName = databaseName;
         }
-        void IForeignKeysDropCreateScriptProvider.GetScripts(out string dropForeignKeyConstraingsSql, out string createForeignKeyConstraingsSql)
+        DropCreateScriptContainer IForeignKeysDropCreateScriptProvider.GenerateScripts(string databaseName)
         {
-            string sql = $@"USE [{_databaseName}]
+            string sql = $@"USE [{databaseName}]
                     CREATE TABLE #x -- feel free to use a permanent table
                     (
                       drop_script NVARCHAR(MAX),
@@ -80,7 +82,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
 
                     UPDATE #x SET create_script = @create;
 
-                    SELECT @drop as dropSql, @create as createSql
+                    SELECT 'USE [{databaseName}]' + @drop as dropSql,'USE [{databaseName}]' +  @create as createSql
 
                     -- EXEC sp_executesql @drop
                     -- EXEC sp_executesql @create";
@@ -94,8 +96,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
                     {
                         if (!reader.Read())
                             throw new ReplicationException("Failed to generate foreign key constraint drop / create scripts");
-                        dropForeignKeyConstraingsSql = reader["dropSql"].ToString();
-                        createForeignKeyConstraingsSql = reader["createSql"].ToString();
+                        return new DataContracts.DropCreateScriptContainer(reader["createSql"].ToString(), reader["dropSql"].ToString());
                     }
                     
                 }

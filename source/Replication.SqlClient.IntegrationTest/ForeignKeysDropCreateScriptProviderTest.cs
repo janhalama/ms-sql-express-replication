@@ -30,7 +30,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
         {
             string DATABASE_NAME = _testDatabaseProvider.GenerateUniqueDatabaseName("TestReplication_ForeignConstraints");
             _testDatabaseProvider.CreateTestDatabase(DATABASE_NAME);
-            IForeignKeysDropCreateScriptProvider foreignKeysDropCreateScriptProvider = new ForeignKeysDropCreateScriptProvider(_connectionString, DATABASE_NAME);
+            IForeignKeysDropCreateScriptProvider foreignKeysDropCreateScriptProvider = new ForeignKeysDropCreateScriptProvider(_connectionString);
             try
             {
                 Student student;
@@ -49,10 +49,10 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
                     });
                     testContext.SaveChanges();
                 }
-                string dropSql, createSql;
-                foreignKeysDropCreateScriptProvider.GetScripts(out dropSql, out createSql);
-                Assert.True(!string.IsNullOrEmpty(dropSql));
-                Assert.True(!string.IsNullOrEmpty(createSql));
+                var scriptContainer = foreignKeysDropCreateScriptProvider.GenerateScripts(DATABASE_NAME);
+                Assert.NotNull(scriptContainer);
+                Assert.True(!string.IsNullOrEmpty(scriptContainer.DropScript));
+                Assert.True(!string.IsNullOrEmpty(scriptContainer.CreateScript));
             }
             finally
             {

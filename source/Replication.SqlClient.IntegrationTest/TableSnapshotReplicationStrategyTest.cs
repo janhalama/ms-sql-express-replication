@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using EntityFramework.BulkInsert.Extensions;
+using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
 
 namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
 {
@@ -21,12 +22,14 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
         Mock<ILog> _logMock;
         TestDatabaseProvider _testDatabaseProvider;
         string _connectionString;
+        IForeignKeysDropCreateScriptProvider _foreignKeysDropCreateScriptProvider;
 
         public TableSnapshotReplicationStrategyTest()
         {
             _logMock = new Mock<ILog>();
             _connectionString = ConfigurationManager.ConnectionStrings["TestDbServerConnectionString"].ConnectionString;
             _testDatabaseProvider = new TestDatabaseProvider(_connectionString);
+            _foreignKeysDropCreateScriptProvider = new ForeignKeysDropCreateScriptProvider(_connectionString);
         }
 
         [Fact]
@@ -63,7 +66,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
                         testContext.Students.Select(s => s.StudentId > 0);
                         testContext.SaveChanges();
                     }
-                    IReplicationStrategy replicationStrategy = new Strategies.TableSnapshotReplicationStrategy(_connectionString, _connectionString, _logMock.Object);
+                    IReplicationStrategy replicationStrategy = new Strategies.TableSnapshotReplicationStrategy(_connectionString, _connectionString, _logMock.Object, _foreignKeysDropCreateScriptProvider);
                     replicationStrategy.Replicate(new ReplicationArticle() { SourceDatabaseName = SOURCE_DATABASE_NAME, TargetDatabaseName = TARGET_DATABASE_NAME, ArticleName = "Standards", SourceSchema = SCHEMA, TargetSchema = SCHEMA, ArticleType = DataContracts.Enums.eArticleType.TABLE });
                     replicationStrategy.Replicate(new ReplicationArticle() { SourceDatabaseName = SOURCE_DATABASE_NAME, TargetDatabaseName = TARGET_DATABASE_NAME, ArticleName = "Students", SourceSchema = SCHEMA, TargetSchema = SCHEMA, ArticleType = DataContracts.Enums.eArticleType.TABLE });
                     using (var testContext = new TestContext(_connectionString + $";Database={TARGET_DATABASE_NAME}"))
@@ -135,7 +138,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
                         testContext.BulkInsert(students2Add);
                         testContext.SaveChanges();
                     }
-                    IReplicationStrategy replicationStrategy = new Strategies.TableSnapshotReplicationStrategy(_connectionString, _connectionString, _logMock.Object);
+                    IReplicationStrategy replicationStrategy = new Strategies.TableSnapshotReplicationStrategy(_connectionString, _connectionString, _logMock.Object, _foreignKeysDropCreateScriptProvider);
                     replicationStrategy.Replicate(new ReplicationArticle() { SourceDatabaseName = SOURCE_DATABASE_NAME, TargetDatabaseName = TARGET_DATABASE_NAME, ArticleName = "Standards", SourceSchema = SCHEMA, TargetSchema = SCHEMA, ArticleType = DataContracts.Enums.eArticleType.TABLE });
                     replicationStrategy.Replicate(new ReplicationArticle() { SourceDatabaseName = SOURCE_DATABASE_NAME, TargetDatabaseName = TARGET_DATABASE_NAME, ArticleName = "Students", SourceSchema = SCHEMA, TargetSchema = SCHEMA, ArticleType = DataContracts.Enums.eArticleType.TABLE });
                     using (var testContext = new TestContext(_connectionString + $";Database={TARGET_DATABASE_NAME}"))
@@ -192,7 +195,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
                         testContext.Students.Select(s => s.StudentId > 0);
                         testContext.SaveChanges();
                     }
-                    IReplicationStrategy replicationStrategy = new Strategies.TableSnapshotReplicationStrategy(_connectionString, _connectionString, _logMock.Object);
+                    IReplicationStrategy replicationStrategy = new Strategies.TableSnapshotReplicationStrategy(_connectionString, _connectionString, _logMock.Object, _foreignKeysDropCreateScriptProvider);
                     replicationStrategy.Replicate(new ReplicationArticle() { SourceDatabaseName = SOURCE_DATABASE_NAME, TargetDatabaseName = TARGET_DATABASE_NAME, ArticleName = "Standards", SourceSchema = SCHEMA, TargetSchema = SCHEMA, ArticleType = DataContracts.Enums.eArticleType.TABLE });
                     replicationStrategy.Replicate(new ReplicationArticle() { SourceDatabaseName = SOURCE_DATABASE_NAME, TargetDatabaseName = TARGET_DATABASE_NAME, ArticleName = "Students", SourceSchema = SCHEMA, TargetSchema = SCHEMA, ArticleType = DataContracts.Enums.eArticleType.TABLE });
                     //repeate; test that foreign keys can be used in tables that are replicated using replication strategy

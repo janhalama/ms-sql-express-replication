@@ -33,7 +33,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
             _log = log;
         }
 
-        void CheckReplicationPrerequisities(IReplicationArticle article, ITable sourceTable, ITable targetTable)
+        void CheckReplicationPrerequisities(IReplicationArticle article, Table sourceTable, Table targetTable)
         {
             //Replication strategy requires that the table contains primary key column of int data type and that the value of the column is incremented 
             if (!sourceTable.Columns.Any(c => c.IsPrimaryKey &&
@@ -52,14 +52,14 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
             if (article.ArticleType != DataContracts.Enums.eArticleType.TABLE)
                 throw new ReplicationException("Only ArticleType = eArticleType.TABLE supported by this strategy");
             ITableSchemaAnalyzer sourceTableAnalyzer = new TableSchemaAnalyzer(_sourceConnectionString, _log);
-            ITable sourceTable = sourceTableAnalyzer.GetTableInfo(article.SourceDatabaseName, article.SourceSchema, article.ArticleName);
+            Table sourceTable = sourceTableAnalyzer.GetTableInfo(article.SourceDatabaseName, article.SourceSchema, article.ArticleName);
             ITableSchemaAnalyzer targetTableAnalyzer = new TableSchemaAnalyzer(_targetConnectionString, _log);
-            ITable targetTable = targetTableAnalyzer.GetTableInfo(article.TargetDatabaseName, article.TargetSchema, article.ArticleName);
+            Table targetTable = targetTableAnalyzer.GetTableInfo(article.TargetDatabaseName, article.TargetSchema, article.ArticleName);
             CheckReplicationPrerequisities(article, sourceTable, targetTable);
             Replicate(sourceTable, targetTable);
         }
 
-        private void Replicate(ITable sourceTable, ITable targetTable)
+        private void Replicate(Table sourceTable, Table targetTable)
         {
             ITableValuesLoader tableValueLoader = new TableValuesLoader(_targetConnectionString, _log);
             long targetDatabasePrimaryKeyMaxValue = tableValueLoader.GetPrimaryKeyMaxValue(targetTable);

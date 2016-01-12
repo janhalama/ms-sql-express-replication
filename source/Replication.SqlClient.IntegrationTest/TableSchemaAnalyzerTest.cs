@@ -1,6 +1,7 @@
 ﻿using Common.Logging;
 using Jh.Data.Sql.Replication.SqlClient.DbTools;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
+using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -89,9 +90,9 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
             const string TESTED_SCHEMA = "dbo";
             const string TESTED_TABLE = "spt_values";
             string[] expectedColumnNames = { "name", "number", "type", "low", "high", "status" };
-            IColumn[] actualResultArray = _testedTableSchemaAnalyzer.GetTableColumns(TESTED_DATABASE, TESTED_SCHEMA, TESTED_TABLE);
+            Column[] actualResultArray = _testedTableSchemaAnalyzer.GetTableColumns(TESTED_DATABASE, TESTED_SCHEMA, TESTED_TABLE);
             Assert.Equal<int>(expectedColumnNames.Count(), actualResultArray.Count());
-            foreach (IColumn actualColumn in actualResultArray)
+            foreach (Column actualColumn in actualResultArray)
                 Assert.Contains(actualColumn.Name, expectedColumnNames);
         }
 
@@ -105,7 +106,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
             try
             {
                 CreateTestTable(CMD_CREATE_TABLE_WITH_PRIMARY_KEY_WITHOUT_IDENTITY, DATABASE_NAME, SCHEMA, TABLE_NAME);
-                ITable table = _testedTableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, "dbo", TABLE_NAME);
+                Table table = _testedTableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, "dbo", TABLE_NAME);
                 Assert.Equal(TABLE_NAME, table.Name);
                 Assert.Equal(DATABASE_NAME, table.Database);
                 Assert.Equal(SCHEMA, table.Schema);
@@ -129,7 +130,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
             try
             {
                 CreateTestTable(CMD_CREATE_TABLE_NO_PRIMARY_KEY, DATABASE_NAME, SCHEMA, TABLE_NAME);
-                ITable table = _testedTableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, "dbo", TABLE_NAME);
+                Table table = _testedTableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, "dbo", TABLE_NAME);
                 Assert.Equal(TABLE_NAME, table.Name);
                 Assert.Equal(DATABASE_NAME, table.Database);
                 Assert.Equal(SCHEMA, table.Schema);
@@ -151,7 +152,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
             try
             {
                 CreateTestTable(CMD_CREATE_TABLE_WITH_PRIMARY_KEY_WITH_IDENTITY, DATABASE_NAME, SCHEMA, TABLE_NAME);
-                ITable table = _testedTableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, SCHEMA, TABLE_NAME);
+                Table table = _testedTableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, SCHEMA, TABLE_NAME);
                 Assert.Equal(TABLE_NAME, table.Name);
                 Assert.Equal(DATABASE_NAME, table.Database);
                 Assert.Equal(SCHEMA, table.Schema);
@@ -173,7 +174,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
             try
             {
                 CreateTestTable(CMD_CREATE_TABLE_WITH_PRIMARY_KEY_WITHOUT_IDENTITY, DATABASE_NAME, SCHEMA, TABLE_NAME);
-                ITable table = _testedTableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, SCHEMA, TABLE_NAME);
+                Table table = _testedTableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, SCHEMA, TABLE_NAME);
                 Assert.Equal(TABLE_NAME, table.Name);
                 Assert.Equal(DATABASE_NAME, table.Database);
                 Assert.Equal(SCHEMA, table.Schema);
@@ -195,7 +196,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
             try
             {
                 CreateTestTable(CMD_CREATE_TABLE_NO_PRIMARY_KEY, DATABASE_NAME, SCHEMA, TABLE_NAME);
-                ITable table = _testedTableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, SCHEMA, TABLE_NAME);
+                Table table = _testedTableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, SCHEMA, TABLE_NAME);
                 Assert.NotNull(table);
             }
             finally
