@@ -12,6 +12,14 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces
         /// </summary>
         /// <param name="table">The table.</param>
         /// <returns></returns>
-        long GetReplicationKeyMaxValue(Table table);
+        long GetPrimaryKeyMaxValue(Table table);
+        /// <summary>
+        /// Gets the column maximum value.
+        /// </summary>
+        /// <param name="table">The table.</param>
+        /// <param name="columnName">Name of the column.</param>
+        /// <returns></returns>
+        long GetColumnMaxValue(Table table, string columnName);
+
     }
 }

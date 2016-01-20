@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Jh.Data.Sql.Replication.SqlClient</id>
-    <version>1.2.3.0</version>
+    <version>1.2.4.0</version>
     <title>MS SQL Express replication library implementation</title>
     <authors>Jan Halama</authors>
     <owners>Jan Halama</owners>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/janhalama/ms-sql-express-replication</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Snapshot replication library</description>
-    <releaseNotes>Bug fix</releaseNotes>
+    <releaseNotes>Bug fixes</releaseNotes>
     <copyright>Copyright © Jan Halama 2015</copyright>
     <tags>Replication SQL</tags>
 	<dependencies> 

@@ -19,18 +19,20 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
             _connectionString = connectionString;
             _log = log;
         }
-        public long GetReplicationKeyMaxValue(Table table)
+        public long GetPrimaryKeyMaxValue(Table table)
+        {
+            Column primaryKeyColumn = table.Columns.Single(c => c.IsPrimaryKey);
+            return GetColumnMaxValue(table, primaryKeyColumn.Name);
+        }
+        public long GetColumnMaxValue(Table table, string columnName)
         {
             try
             {
                 using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
                 {
-                    Column replicationKeyColumn = table.Columns.FirstOrDefault(c => c.IsPrimaryKey);
-                    if(replicationKeyColumn == null) //fallback to sigle foreign key
-                        replicationKeyColumn = table.Columns.Single(c => c.IsForeignKey);
                     sqlConnection.Open();
                     string commandText = string.Format(@"USE [{0}]
-                                                         SELECT MAX([{1}]) FROM [{2}].[{3}]", table.Database, replicationKeyColumn.Name, table.Schema, table.Name);
+                                                         SELECT MAX([{1}]) FROM [{2}].[{3}]", table.Database, columnName, table.Schema, table.Name);
                     SqlCommand command = new SqlCommand(commandText, sqlConnection);
                     object res = command.ExecuteScalar();
                     return res is DBNull ? -1 : Convert.ToInt64(res);

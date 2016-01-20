@@ -70,7 +70,10 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
         private void Replicate(Table sourceTable, Table targetTable)
         {
             ITableValuesLoader tableValueLoader = new TableValuesLoader(_targetConnectionString, _log);
-            long targetDatabasePrimaryKeyMaxValue = tableValueLoader.GetReplicationKeyMaxValue(targetTable);
+            Column replicationKeyColumn = sourceTable.Columns.FirstOrDefault(c => c.IsPrimaryKey);
+            if (replicationKeyColumn == null) //fallback to sigle foreign key
+                replicationKeyColumn = targetTable.Columns.Single(c => c.IsForeignKey);
+            long targetDatabasePrimaryKeyMaxValue = tableValueLoader.GetColumnMaxValue(targetTable, replicationKeyColumn.Name);
             try
             {
                 using (SqlConnection sourceDatabaseSqlConnection = new SqlConnection(_sourceConnectionString))
@@ -81,7 +84,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                                                         sourceTable.Database,
                                                                         sourceTable.Schema,
                                                                         sourceTable.Name,
-                                                                        sourceTable.Columns.First(c => c.IsPrimaryKey).Name, 
+                                                                        replicationKeyColumn.Name, 
                                                                         targetDatabasePrimaryKeyMaxValue), 
                                                                         sourceDatabaseSqlConnection);
                     using (SqlDataReader reader = command.ExecuteReader())
