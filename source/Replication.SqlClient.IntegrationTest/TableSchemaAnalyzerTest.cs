@@ -2,6 +2,7 @@
 using Jh.Data.Sql.Replication.SqlClient.DbTools;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
+using Jh.Data.Sql.Replication.SqlClient.IntegrationTest.TestModels;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -158,6 +159,28 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
                 Assert.Equal(SCHEMA, table.Schema);
                 Assert.True(table.Columns.Count(c => c.IsIdentity) == 1, "Identity seed column expected");
                 Assert.Equal(2, table.Columns.Count());
+            }
+            finally
+            {
+                _testDatabaseProvider.DropTestDatabase(DATABASE_NAME);
+            }
+        }
+        [Fact]
+        public void TestGetTableInfoForTableWithForeignKeyColumn()
+        {
+            string DATABASE_NAME = _testDatabaseProvider.GenerateUniqueDatabaseName("TestReplication");
+            const string SCHEMA = "dbo";
+            try
+            {
+                using (var testContext = new TestContext(_connectionString + $";Database={DATABASE_NAME}"))
+                {
+                    testContext.Standards.Select(s => s.StandardId > 0);
+                    testContext.Students.Select(s => s.StudentId > 0);
+                    testContext.SaveChanges();
+                }
+                Table table = _testedTableSchemaAnalyzer.GetTableInfo(DATABASE_NAME, SCHEMA, "Students");
+                Assert.True(table.Columns.Count(c => c.Name == "StandardId" && c.IsForeignKey) == 1, "Foreign key column expected");
+                Assert.True(table.Columns.Count(c => c.IsForeignKey) == 1, "Only one foreign key expected");
             }
             finally
             {

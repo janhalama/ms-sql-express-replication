@@ -24,6 +24,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
             try
             {
                 string primaryColumnName = GetPrimaryKeyColumnName(catalog, schema, table);
+                string[] foreignKeyColumnNames = GetForeignKeyColumnNames(catalog, schema, table);
                 using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
                 {
                     sqlConnection.Open();
@@ -41,7 +42,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
                             if (!Enum.TryParse<System.Data.SqlDbType>(reader["DATA_TYPE"].ToString(), true, out columnType))
                                 throw new Exception("Failed to parse column type");
                             string columnName = reader["COLUMN_NAME"].ToString();
-                            res.Add(new Column() { Name = columnName, DataType = columnType, IsPrimaryKey = columnName == primaryColumnName, IsIdentity = (int)reader["IsIdentity"] == 1 });
+                            res.Add(new Column() { Name = columnName, DataType = columnType, IsPrimaryKey = columnName == primaryColumnName, IsForeignKey = foreignKeyColumnNames.Contains(columnName), IsIdentity = (int)reader["IsIdentity"] == 1 });
                         }
                         return res.ToArray();
                     }
@@ -50,6 +51,39 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
             catch (Exception ex)
             {
                 _log.Error("GetTableColumnNames exception", ex);
+                throw;
+            }
+        }
+
+        string[] GetForeignKeyColumnNames(string catalog, string schema, string table)
+        {
+            try
+            {
+                List<string> result = new List<string>();
+                using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
+                {
+                    sqlConnection.Open();
+                    string commandText = @"SELECT colUsage.COLUMN_NAME 
+                                           FROM [{0}].INFORMATION_SCHEMA.KEY_COLUMN_USAGE as colUsage
+                                           INNER JOIN [{0}].INFORMATION_SCHEMA.TABLE_CONSTRAINTS tabCon on tabCon.CONSTRAINT_NAME = colUsage.CONSTRAINT_NAME AND tabCon.CONSTRAINT_SCHEMA = colUsage.CONSTRAINT_SCHEMA 
+                                           WHERE colUsage.TABLE_CATALOG = @catalog AND colUsage.TABLE_SCHEMA = @schema AND colUsage.TABLE_NAME = @table AND tabCon.CONSTRAINT_TYPE = 'FOREIGN KEY'";
+                    SqlCommand command = new SqlCommand(string.Format(commandText, catalog), sqlConnection);
+                    command.Parameters.AddWithValue("@catalog", catalog);
+                    command.Parameters.AddWithValue("@schema", schema);
+                    command.Parameters.AddWithValue("@table", table);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    { 
+                        while (reader.Read())
+                        {
+                            result.Add(reader["COLUMN_NAME"].ToString());
+                        }
+                    }
+                }
+                return result.ToArray();
+            }
+            catch (Exception ex)
+            {
+                _log.Error("GetForeignKeyColumnNames exception", ex);
                 throw;
             }
         }

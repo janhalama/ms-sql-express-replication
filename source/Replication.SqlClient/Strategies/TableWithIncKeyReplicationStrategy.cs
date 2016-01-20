@@ -41,7 +41,14 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                        c.DataType == System.Data.SqlDbType.SmallInt ||
                                        c.DataType == System.Data.SqlDbType.Int ||
                                        c.DataType == System.Data.SqlDbType.BigInt)))
-                throw new ReplicationException($"Table {sourceTable.Name} doesn't contain primary key column or the type of the primary key column is not TinyInt or SmallInt or Int or BigInt");
+            {
+                if(sourceTable.Columns.SingleOrDefault(c => c.IsForeignKey &&
+                                      (c.DataType == System.Data.SqlDbType.TinyInt ||
+                                       c.DataType == System.Data.SqlDbType.SmallInt ||
+                                       c.DataType == System.Data.SqlDbType.Int ||
+                                       c.DataType == System.Data.SqlDbType.BigInt)) != null)
+                    throw new ReplicationException($"Table {sourceTable.Name} doesn't contain primary key or single foreign key column or the type of the key column is not TinyInt or SmallInt or Int or BigInt");
+            }
             //TODO: test that primary key is incremented (IDENTITY SEED is set to true on the table)
             IReplicationAnalyzer replicationAnalyzer = new ReplicationAnalyzer(_log);
             if (!replicationAnalyzer.AreTableSchemasReplicationCompliant(sourceTable, targetTable))
@@ -63,7 +70,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
         private void Replicate(Table sourceTable, Table targetTable)
         {
             ITableValuesLoader tableValueLoader = new TableValuesLoader(_targetConnectionString, _log);
-            long targetDatabasePrimaryKeyMaxValue = tableValueLoader.GetPrimaryKeyMaxValue(targetTable);
+            long targetDatabasePrimaryKeyMaxValue = tableValueLoader.GetReplicationKeyMaxValue(targetTable);
             try
             {
                 using (SqlConnection sourceDatabaseSqlConnection = new SqlConnection(_sourceConnectionString))

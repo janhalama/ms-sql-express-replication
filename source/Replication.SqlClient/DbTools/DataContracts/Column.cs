@@ -10,6 +10,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts
     {
         public string Name { get; set; }
         public bool IsPrimaryKey { get; set; }
+        public bool IsForeignKey { get; set; }
         public bool IsIdentity { get; set; }
         public System.Data.SqlDbType DataType { get; set; }
     }

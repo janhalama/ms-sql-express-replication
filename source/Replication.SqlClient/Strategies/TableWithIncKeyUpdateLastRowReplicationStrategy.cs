@@ -62,7 +62,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
         private void Replicate(Table sourceTable, Table targetTable)
         {
             ITableValuesLoader tableValueLoader = new TableValuesLoader(_targetConnectionString, _log);
-            long targetDatabasePrimaryKeyMaxValue = tableValueLoader.GetPrimaryKeyMaxValue(targetTable);
+            long targetDatabasePrimaryKeyMaxValue = tableValueLoader.GetReplicationKeyMaxValue(targetTable);
             try
             {
                 using (SqlConnection sourceDatabaseSqlConnection = new SqlConnection(_sourceConnectionString))
