@@ -73,7 +73,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                     string identityInsertSetup = targetTable.Columns.Any(c => c.IsIdentity) ? $"SET IDENTITY_INSERT {targetTable.Schema}.{targetTable.Name} ON" : "";
                                     while (reader.Read())
                                     {
-                                        NewMethod(sourceTable, targetTable, reader, targetDatabaseConnection, transaction, identityInsertSetup);
+                                        InsertRow(sourceTable, targetTable, reader, targetDatabaseConnection, transaction, identityInsertSetup);
                                         syncedRows++;
                                     }
                                     ExecuteNonQuerySqlCommand(scriptContainer.CreateScript, targetDatabaseConnection, transaction);
@@ -98,7 +98,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
             }
         }
 
-        private static void NewMethod(Table sourceTable, Table targetTable, SqlDataReader reader, SqlConnection targetDatabaseConnection, SqlTransaction transaction, string identityInsertSetup)
+        private static void InsertRow(Table sourceTable, Table targetTable, SqlDataReader reader, SqlConnection targetDatabaseConnection, SqlTransaction transaction, string identityInsertSetup)
         {
             SqlCommand insertCommand = new SqlCommand("", targetDatabaseConnection, transaction);
             string insertCommandText = $@"USE [{targetTable.Database}]
