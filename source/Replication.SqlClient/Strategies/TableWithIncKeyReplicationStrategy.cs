@@ -46,7 +46,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                       (c.DataType == System.Data.SqlDbType.TinyInt ||
                                        c.DataType == System.Data.SqlDbType.SmallInt ||
                                        c.DataType == System.Data.SqlDbType.Int ||
-                                       c.DataType == System.Data.SqlDbType.BigInt)) != null)
+                                       c.DataType == System.Data.SqlDbType.BigInt)) == null)
                     throw new ReplicationException($"Table {sourceTable.Name} doesn't contain primary key or single foreign key column or the type of the key column is not TinyInt or SmallInt or Int or BigInt");
             }
             //TODO: test that primary key is incremented (IDENTITY SEED is set to true on the table)
