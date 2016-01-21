@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Jh.Data.Sql.Replication.SqlClient.DbTools
 {
-    internal class TableSchemaAnalyzer : ITableSchemaAnalyzer
+    public class TableSchemaAnalyzer : ITableSchemaAnalyzer
     {
         private string _connectionString;
         private ILog _log;

@@ -5,7 +5,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces
     /// <summary>
     /// Analyzes the database table
     /// </summary>
-    internal interface ITableSchemaAnalyzer
+    public interface ITableSchemaAnalyzer
     {
         /// <summary>
         /// Gets the table columns.

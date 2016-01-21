@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts
 {
-    internal class Table
+    public class Table
     {
         public string Database { get; set; }
         public string Schema { get; set; }
