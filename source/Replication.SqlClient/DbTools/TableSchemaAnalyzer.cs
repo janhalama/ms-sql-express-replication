@@ -98,7 +98,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
                     string commandText = @"SELECT colUsage.COLUMN_NAME 
                                            FROM [{0}].INFORMATION_SCHEMA.KEY_COLUMN_USAGE as colUsage
                                            INNER JOIN [{0}].INFORMATION_SCHEMA.TABLE_CONSTRAINTS tabCon on tabCon.CONSTRAINT_NAME = colUsage.CONSTRAINT_NAME AND tabCon.CONSTRAINT_SCHEMA = colUsage.CONSTRAINT_SCHEMA 
-                                           WHERE colUsage.TABLE_CATALOG = @catalog AND colUsage.TABLE_SCHEMA = @schema AND colUsage.TABLE_NAME = @table AND tabCon.CONSTRAINT_TYPE = 'Primary Key'";
+                                           WHERE colUsage.TABLE_CATALOG = @catalog AND colUsage.TABLE_SCHEMA = @schema AND colUsage.TABLE_NAME = @table AND (tabCon.CONSTRAINT_TYPE  collate sql_latin1_general_cp1_ci_as) = 'PRIMARY KEY'";
                     SqlCommand command = new SqlCommand(string.Format(commandText, catalog), sqlConnection);
                     command.Parameters.AddWithValue("@catalog", catalog);
                     command.Parameters.AddWithValue("@schema", schema);
