@@ -33,7 +33,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
         {
             IReplicationAnalyzer replicationAnalyzer = new ReplicationAnalyzer(_log);
             if (!replicationAnalyzer.AreTableSchemasReplicationCompliant(sourceTable, targetTable))
-                throw new ReplicationException("Source and target table are not replication compliant (there are schema differences in those tables)");
+                throw new ReplicationException($"Source and target table {sourceTable.Name} are not replication compliant (there are schema differences in those tables)");
         }
         void IReplicationStrategy.Replicate(IReplicationArticle article)
         {
