@@ -23,7 +23,10 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
             foreach (Column sourceColumn in sourceTable.Columns)
             {
                 if (!targetTable.Columns.Any(c => c.Name == sourceColumn.Name && c.DataType == sourceColumn.DataType && c.IsPrimaryKey == sourceColumn.IsPrimaryKey))
+                {
+                    _log.Debug($"AreTableSchemasReplicationCompliant - column not found | Table: {sourceTable.Name} | Column: {sourceColumn.Name} | Data type: {sourceColumn.DataType} | Is primary key: {sourceColumn.IsForeignKey}");
                     return false;
+                }
             }
             return true;
         }
