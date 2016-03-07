@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Jh.Data.Sql.Replication.SqlClient</id>
-    <version>1.3.5</version>
+    <version>1.3.6</version>
     <title>MS SQL Express replication library implementation</title>
     <authors>Jan Halama</authors>
     <owners>Jan Halama</owners>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/janhalama/ms-sql-express-replication</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Snapshot replication library</description>
-    <releaseNotes>Fixed TableAnalyzer implementation on SQL servers with case sensitive string collation</releaseNotes>
+    <releaseNotes>Fixed collation error in drop create foreign key script</releaseNotes>
     <copyright>Copyright © Jan Halama 2015</copyright>
     <tags>Replication SQL</tags>
 	<dependencies> 

@@ -82,7 +82,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
 
                     UPDATE #x SET create_script = @create;
 
-                    SELECT 'USE [{databaseName}]' + @drop as dropSql,'USE [{databaseName}]' +  @create as createSql
+                    SELECT N'USE [{databaseName}]' + @drop as dropSql,N'USE [{databaseName}]' +  @create as createSql
 
                     -- EXEC sp_executesql @drop
                     -- EXEC sp_executesql @create";

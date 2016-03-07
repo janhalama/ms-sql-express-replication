@@ -1,4 +1,4 @@
-SET ver=1.3.5
+SET ver=1.3.6
 SET projectName=Jh.Data.Sql.Replication.SqlClient
 
 nuget pack %projectName%.csproj -Build -Symbols -IncludeReferencedProjects
