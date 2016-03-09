@@ -2,6 +2,7 @@
 using Jh.Data.Sql.Replication.SqlClient.DbTools;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
+using Jh.Data.Sql.Replication.SqlClient.Factories;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -27,8 +28,8 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
             _logMock = new Mock<ILog>();
             _connectionString = ConfigurationManager.ConnectionStrings["TestDbServerConnectionString"].ConnectionString;
             _testDatabaseProvider = new TestDatabaseProvider(_connectionString);
-            _tableSchemaAnalyzer = new TableSchemaAnalyzer(_connectionString, _logMock.Object);
-            _tableValuesLoader = new TableValuesLoader(_connectionString, _logMock.Object);
+            _tableSchemaAnalyzer = new TableSchemaAnalyzer(_connectionString, _logMock.Object, new SqlCommandFactory());
+            _tableValuesLoader = new TableValuesLoader(_connectionString, _logMock.Object, new SqlCommandFactory());
         }
 
         private void CreateTable(string database, string schema, string tableName)

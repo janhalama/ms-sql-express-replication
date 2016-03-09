@@ -2,6 +2,7 @@
 using Jh.Data.Sql.Replication.DataContracts;
 using Jh.Data.Sql.Replication.SqlClient.DbTools;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
+using Jh.Data.Sql.Replication.SqlClient.Factories;
 using Jh.Data.Sql.Replication.SqlClient.IntegrationTest.TestModels;
 using Moq;
 using System;
@@ -108,7 +109,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
                     InsertIntoTable(SOURCE_DATABASE_NAME, SCHEMA, TABLE_NAME, ROWS_COUNT);
                     CreateTable(TARGET_DATABASE_NAME, SCHEMA, TABLE_NAME);
 
-                    IReplicationStrategy replicationStrategy = new Strategies.TableWithIncKeyReplicationStrategy(_connectionString, _connectionString, _logMock.Object);
+                    IReplicationStrategy replicationStrategy = new Strategies.TableWithIncKeyReplicationStrategy(_connectionString, _connectionString, _logMock.Object, new SqlCommandFactory());
                     replicationStrategy.Replicate(new ReplicationArticle() { SourceDatabaseName = SOURCE_DATABASE_NAME, TargetDatabaseName = TARGET_DATABASE_NAME, ArticleName = TABLE_NAME, SourceSchema = SCHEMA, TargetSchema = SCHEMA, ArticleType = DataContracts.Enums.eArticleType.TABLE });
                     Assert.Equal(ROWS_COUNT, TableRowsCount(TARGET_DATABASE_NAME, SCHEMA, TABLE_NAME));
                 }
@@ -138,7 +139,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
                 {
                     CreateTable(SOURCE_DATABASE_NAME, SCHEMA, TABLE_NAME);
                     CreateTable(TARGET_DATABASE_NAME, SCHEMA, TABLE_NAME);
-                    IReplicationStrategy replicationStrategy = new Strategies.TableWithIncKeyReplicationStrategy(_connectionString, _connectionString, _logMock.Object);
+                    IReplicationStrategy replicationStrategy = new Strategies.TableWithIncKeyReplicationStrategy(_connectionString, _connectionString, _logMock.Object, new SqlCommandFactory());
                     Assert.Throws<ReplicationException>(() => replicationStrategy.Replicate(new ReplicationArticle() { SourceDatabaseName = SOURCE_DATABASE_NAME, TargetDatabaseName = TARGET_DATABASE_NAME, ArticleName = TABLE_NAME, SourceSchema = SCHEMA, TargetSchema = SCHEMA, ArticleType = DataContracts.Enums.eArticleType.FUNCTION }));
                 }
                 finally
@@ -185,7 +186,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
                         testContext.Students.Select(s => s.StudentId > 0);
                         testContext.SaveChanges();
                     }
-                    IReplicationStrategy replicationStrategy = new Strategies.TableWithIncKeyReplicationStrategy(_connectionString, _connectionString, _logMock.Object);
+                    IReplicationStrategy replicationStrategy = new Strategies.TableWithIncKeyReplicationStrategy(_connectionString, _connectionString, _logMock.Object, new SqlCommandFactory());
                     replicationStrategy.Replicate(new ReplicationArticle() { SourceDatabaseName = SOURCE_DATABASE_NAME, TargetDatabaseName = TARGET_DATABASE_NAME, ArticleName = "Standards", SourceSchema = SCHEMA, TargetSchema = SCHEMA, ArticleType = DataContracts.Enums.eArticleType.TABLE });
                     replicationStrategy.Replicate(new ReplicationArticle() { SourceDatabaseName = SOURCE_DATABASE_NAME, TargetDatabaseName = TARGET_DATABASE_NAME, ArticleName = "Students", SourceSchema = SCHEMA, TargetSchema = SCHEMA, ArticleType = DataContracts.Enums.eArticleType.TABLE });
                     using (var testContext = new TestContext(_connectionString + $";Database={TARGET_DATABASE_NAME}"))

@@ -1,6 +1,7 @@
 ﻿using Common.Logging;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
+using Jh.Data.Sql.Replication.SqlClient.Factories;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -14,10 +15,12 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
     {
         private string _connectionString;
         private ILog _log;
-        public TableSchemaAnalyzer(string connectionString, ILog log)
+        private ISqlCommandFactory _sqlCommandFactory;
+        public TableSchemaAnalyzer(string connectionString, ILog log, ISqlCommandFactory sqlCommandFactory)
         {
             _connectionString = connectionString;
             _log = log;
+            _sqlCommandFactory = sqlCommandFactory;
         }
         Column[] ITableSchemaAnalyzer.GetTableColumns(string catalog, string schema, string table)
         {
@@ -32,7 +35,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
                                            SELECT COLUMN_NAME, DATA_TYPE, COLUMNPROPERTY(object_id('{1}.{2}'), COLUMN_NAME, 'IsIdentity') as 'IsIdentity'
                                            FROM [{0}].INFORMATION_SCHEMA.COLUMNS
                                            WHERE TABLE_CATALOG = '{0}' AND TABLE_SCHEMA = '{1}' AND TABLE_NAME = '{2}'";
-                    SqlCommand command = new SqlCommand(string.Format(commandText, catalog, schema, table), sqlConnection);
+                    SqlCommand command = _sqlCommandFactory.CreateSqlCommand(string.Format(commandText, catalog, schema, table), sqlConnection);
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         List<Column> res = new List<Column>();
@@ -67,7 +70,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
                                            FROM [{0}].INFORMATION_SCHEMA.KEY_COLUMN_USAGE as colUsage
                                            INNER JOIN [{0}].INFORMATION_SCHEMA.TABLE_CONSTRAINTS tabCon on tabCon.CONSTRAINT_NAME = colUsage.CONSTRAINT_NAME AND tabCon.CONSTRAINT_SCHEMA = colUsage.CONSTRAINT_SCHEMA 
                                            WHERE colUsage.TABLE_CATALOG = @catalog AND colUsage.TABLE_SCHEMA = @schema AND colUsage.TABLE_NAME = @table AND tabCon.CONSTRAINT_TYPE = 'FOREIGN KEY'";
-                    SqlCommand command = new SqlCommand(string.Format(commandText, catalog), sqlConnection);
+                    SqlCommand command = _sqlCommandFactory.CreateSqlCommand(string.Format(commandText, catalog), sqlConnection);
                     command.Parameters.AddWithValue("@catalog", catalog);
                     command.Parameters.AddWithValue("@schema", schema);
                     command.Parameters.AddWithValue("@table", table);
@@ -99,7 +102,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
                                            FROM [{0}].INFORMATION_SCHEMA.KEY_COLUMN_USAGE as colUsage
                                            INNER JOIN [{0}].INFORMATION_SCHEMA.TABLE_CONSTRAINTS tabCon on tabCon.CONSTRAINT_NAME = colUsage.CONSTRAINT_NAME AND tabCon.CONSTRAINT_SCHEMA = colUsage.CONSTRAINT_SCHEMA 
                                            WHERE colUsage.TABLE_CATALOG = @catalog AND colUsage.TABLE_SCHEMA = @schema AND colUsage.TABLE_NAME = @table AND (tabCon.CONSTRAINT_TYPE  collate sql_latin1_general_cp1_ci_as) = 'PRIMARY KEY'";
-                    SqlCommand command = new SqlCommand(string.Format(commandText, catalog), sqlConnection);
+                    SqlCommand command = _sqlCommandFactory.CreateSqlCommand(string.Format(commandText, catalog), sqlConnection);
                     command.Parameters.AddWithValue("@catalog", catalog);
                     command.Parameters.AddWithValue("@schema", schema);
                     command.Parameters.AddWithValue("@table", table);

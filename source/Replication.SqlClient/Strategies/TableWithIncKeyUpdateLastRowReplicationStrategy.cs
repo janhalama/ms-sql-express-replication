@@ -3,6 +3,7 @@ using Jh.Data.Sql.Replication.DataContracts;
 using Jh.Data.Sql.Replication.SqlClient.DbTools;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
+using Jh.Data.Sql.Replication.SqlClient.Factories;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -26,11 +27,13 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
         string _sourceConnectionString;
         string _targetConnectionString;
         ILog _log;
-        public TableWithIncKeyUpdateLastRowReplicationStrategy(string sourceConnectionString, string targetConnectionString, ILog log)
+        ISqlCommandFactory _sqlCommandFactory;
+        public TableWithIncKeyUpdateLastRowReplicationStrategy(string sourceConnectionString, string targetConnectionString, ILog log, ISqlCommandFactory sqlCommandFactory)
         {
             _sourceConnectionString = sourceConnectionString;
             _targetConnectionString = targetConnectionString;
             _log = log;
+            _sqlCommandFactory = sqlCommandFactory;
         }
 
         void CheckReplicationPrerequisities(IReplicationArticle article, Table sourceTable, Table targetTable)
@@ -58,9 +61,9 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
         {
             if (article.ArticleType != DataContracts.Enums.eArticleType.TABLE)
                 throw new ReplicationException("Only ArticleType = eArticleType.TABLE supported by this strategy");
-            ITableSchemaAnalyzer sourceTableAnalyzer = new TableSchemaAnalyzer(_sourceConnectionString, _log);
+            ITableSchemaAnalyzer sourceTableAnalyzer = new TableSchemaAnalyzer(_sourceConnectionString, _log, _sqlCommandFactory);
             Table sourceTable = sourceTableAnalyzer.GetTableInfo(article.SourceDatabaseName, article.SourceSchema, article.ArticleName);
-            ITableSchemaAnalyzer targetTableAnalyzer = new TableSchemaAnalyzer(_targetConnectionString, _log);
+            ITableSchemaAnalyzer targetTableAnalyzer = new TableSchemaAnalyzer(_targetConnectionString, _log, _sqlCommandFactory);
             Table targetTable = targetTableAnalyzer.GetTableInfo(article.TargetDatabaseName, article.TargetSchema, article.ArticleName);
             CheckReplicationPrerequisities(article, sourceTable, targetTable);
             Replicate(sourceTable, targetTable);
@@ -68,7 +71,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
 
         private void Replicate(Table sourceTable, Table targetTable)
         {
-            ITableValuesLoader tableValueLoader = new TableValuesLoader(_targetConnectionString, _log);
+            ITableValuesLoader tableValueLoader = new TableValuesLoader(_targetConnectionString, _log, _sqlCommandFactory);
             Column replicationKeyColumn = sourceTable.Columns.FirstOrDefault(c => c.IsPrimaryKey);
             if (replicationKeyColumn == null) //fallback to sigle foreign key
                 replicationKeyColumn = targetTable.Columns.Single(c => c.IsForeignKey);
@@ -78,7 +81,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                 using (SqlConnection sourceDatabaseSqlConnection = new SqlConnection(_sourceConnectionString))
                 {
                     sourceDatabaseSqlConnection.Open();
-                    SqlCommand command = new SqlCommand(string.Format(@"USE [{0}]
+                    SqlCommand command = _sqlCommandFactory.CreateSqlCommand(string.Format(@"USE [{0}]
                                                                         SELECT * FROM [{1}].[{2}] WHERE [{3}] >= {4}",
                                                                         sourceTable.Database,
                                                                         sourceTable.Schema,
@@ -99,7 +102,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                     string identityInsertSetup = targetTable.Columns.Any(c => c.IsIdentity) ? $"SET IDENTITY_INSERT {targetTable.Schema}.{targetTable.Name} ON" : "";
                                     if (targetDatabasePrimaryKeyMaxValue != -1 && reader.Read())
                                     {
-                                        SqlCommand updateCommand = new SqlCommand("", targetDatabaseSqlConnection, transaction);
+                                        SqlCommand updateCommand = _sqlCommandFactory.CreateSqlCommand("", targetDatabaseSqlConnection, transaction);
                                         string updateCommandText = $@"USE [{targetTable.Database}]
                                                                       UPDATE [{targetTable.Schema}].[{targetTable.Name}]  SET ";
                                         for (int i = 0; i < sourceTable.Columns.Length; i++)
@@ -117,7 +120,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                     }
                                     while (reader.Read())
                                     {
-                                        SqlCommand insertCommand = new SqlCommand("", targetDatabaseSqlConnection, transaction);
+                                        SqlCommand insertCommand = _sqlCommandFactory.CreateSqlCommand("", targetDatabaseSqlConnection, transaction);
                                         string insertCommandText = $@"USE [{targetTable.Database}]
                                                                       {identityInsertSetup}
                                                                       INSERT INTO [{targetTable.Schema}].[{targetTable.Name}] ( ";

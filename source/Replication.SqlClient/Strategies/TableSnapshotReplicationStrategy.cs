@@ -3,6 +3,7 @@ using Jh.Data.Sql.Replication.DataContracts;
 using Jh.Data.Sql.Replication.SqlClient.DbTools;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
+using Jh.Data.Sql.Replication.SqlClient.Factories;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -22,12 +23,14 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
         readonly string _targetConnectionString;
         readonly ILog _log;
         readonly IForeignKeysDropCreateScriptProvider _foreignKeysDropCreateScriptProvider;
-        public TableSnapshotReplicationStrategy(string sourceConnectionString, string targetConnectionString, ILog log, IForeignKeysDropCreateScriptProvider foreignKeysDropCreateScriptProvider)
+        readonly ISqlCommandFactory _sqlCommandFactory;
+        public TableSnapshotReplicationStrategy(string sourceConnectionString, string targetConnectionString, ILog log, IForeignKeysDropCreateScriptProvider foreignKeysDropCreateScriptProvider, ISqlCommandFactory sqlCommandFactory)
         {
             _sourceConnectionString = sourceConnectionString;
             _targetConnectionString = targetConnectionString;
             _log = log;
             _foreignKeysDropCreateScriptProvider = foreignKeysDropCreateScriptProvider;
+            _sqlCommandFactory = sqlCommandFactory;
         }
         void CheckReplicationPrerequisities(IReplicationArticle article, Table sourceTable, Table targetTable)
         {
@@ -39,9 +42,9 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
         {
             if (article.ArticleType != DataContracts.Enums.eArticleType.TABLE)
                 throw new ArgumentException("Only ArticleType = eArticleType.TABLE supported by this strategy");
-            ITableSchemaAnalyzer sourceTableAnalyzer = new TableSchemaAnalyzer(_sourceConnectionString, _log);
+            ITableSchemaAnalyzer sourceTableAnalyzer = new TableSchemaAnalyzer(_sourceConnectionString, _log, _sqlCommandFactory);
             Table sourceTable = sourceTableAnalyzer.GetTableInfo(article.SourceDatabaseName, article.SourceSchema, article.ArticleName);
-            ITableSchemaAnalyzer targetTableAnalyzer = new TableSchemaAnalyzer(_targetConnectionString, _log);
+            ITableSchemaAnalyzer targetTableAnalyzer = new TableSchemaAnalyzer(_targetConnectionString, _log, _sqlCommandFactory);
             Table targetTable = targetTableAnalyzer.GetTableInfo(article.TargetDatabaseName, article.TargetSchema, article.ArticleName);
             CheckReplicationPrerequisities(article, sourceTable, targetTable);
             Replicate(sourceTable, targetTable);
@@ -54,8 +57,8 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                 using (SqlConnection sourceDatabaseConnection = new SqlConnection(_sourceConnectionString))
                 {
                     sourceDatabaseConnection.Open();
-                    SqlCommand command = new SqlCommand($@"USE [{sourceTable.Database}]
-                                                           SELECT * FROM {sourceTable.Schema}.{sourceTable.Name}", sourceDatabaseConnection);
+                    SqlCommand command = _sqlCommandFactory.CreateSqlCommand($@"USE [{sourceTable.Database}]
+                                                                                SELECT * FROM {sourceTable.Schema}.{sourceTable.Name}", sourceDatabaseConnection);
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         using (SqlConnection targetDatabaseConnection = new SqlConnection(_targetConnectionString))
@@ -66,17 +69,17 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                 int syncedRows = 0;
                                 try
                                 {
-                                    ExecuteNonQuerySqlCommand(scriptContainer.DropScript, targetDatabaseConnection, transaction);
+                                    ExecuteNonQuerySqlCommand(scriptContainer.DropScript, targetDatabaseConnection, transaction, _sqlCommandFactory);
                                     string truncateSql = $@"USE [{targetTable.Database}]
                                                             TRUNCATE TABLE {targetTable.Schema}.{targetTable.Name}";
-                                    ExecuteNonQuerySqlCommand(truncateSql, targetDatabaseConnection, transaction);
+                                    ExecuteNonQuerySqlCommand(truncateSql, targetDatabaseConnection, transaction, _sqlCommandFactory);
                                     string identityInsertSetup = targetTable.Columns.Any(c => c.IsIdentity) ? $"SET IDENTITY_INSERT {targetTable.Schema}.{targetTable.Name} ON" : "";
                                     while (reader.Read())
                                     {
-                                        InsertRow(sourceTable, targetTable, reader, targetDatabaseConnection, transaction, identityInsertSetup);
+                                        InsertRow(sourceTable, targetTable, reader, targetDatabaseConnection, transaction, identityInsertSetup,_sqlCommandFactory);
                                         syncedRows++;
                                     }
-                                    ExecuteNonQuerySqlCommand(scriptContainer.CreateScript, targetDatabaseConnection, transaction);
+                                    ExecuteNonQuerySqlCommand(scriptContainer.CreateScript, targetDatabaseConnection, transaction, _sqlCommandFactory);
                                 }
                                 catch (Exception ex)
                                 {
@@ -98,9 +101,9 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
             }
         }
 
-        private static void InsertRow(Table sourceTable, Table targetTable, SqlDataReader reader, SqlConnection targetDatabaseConnection, SqlTransaction transaction, string identityInsertSetup)
+        private static void InsertRow(Table sourceTable, Table targetTable, SqlDataReader reader, SqlConnection targetDatabaseConnection, SqlTransaction transaction, string identityInsertSetup, ISqlCommandFactory commandFactory)
         {
-            SqlCommand insertCommand = new SqlCommand("", targetDatabaseConnection, transaction);
+            SqlCommand insertCommand = commandFactory.CreateSqlCommand("", targetDatabaseConnection, transaction);
             string insertCommandText = $@"USE [{targetTable.Database}]
                                                                       {identityInsertSetup} 
                                                                       INSERT INTO {targetTable.Schema}.{targetTable.Name} ( ";
@@ -117,9 +120,9 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                 throw new ReplicationException("Replication error: Failed to insert row into target database");
         }
 
-        private static int ExecuteNonQuerySqlCommand(string sqlCommandText, SqlConnection targetDatabaseConnection, SqlTransaction transaction)
+        private static int ExecuteNonQuerySqlCommand(string sqlCommandText, SqlConnection targetDatabaseConnection, SqlTransaction transaction, ISqlCommandFactory commandFactory)
         {
-            SqlCommand deleteForeignKeysConstraintsCmd = new SqlCommand(sqlCommandText, targetDatabaseConnection);
+            SqlCommand deleteForeignKeysConstraintsCmd = commandFactory.CreateSqlCommand(sqlCommandText, targetDatabaseConnection);
             deleteForeignKeysConstraintsCmd.Transaction = transaction;
             return deleteForeignKeysConstraintsCmd.ExecuteNonQuery();
         }

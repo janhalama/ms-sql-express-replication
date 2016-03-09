@@ -60,6 +60,8 @@
     <Compile Include="DbTools\Interfaces\ITableValuesLoader.cs" />
     <Compile Include="DbTools\ReplicationAnalyzer.cs" />
     <Compile Include="DbTools\TableValuesLoader.cs" />
+    <Compile Include="Factories\ISqlCommandFactory.cs" />
+    <Compile Include="Factories\SqlCommandFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DbTools\DataContracts\Column.cs" />
     <Compile Include="DbTools\DataContracts\Table.cs" />

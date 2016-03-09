@@ -2,6 +2,7 @@
 using Jh.Data.Sql.Replication.SqlClient.DbTools;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
+using Jh.Data.Sql.Replication.SqlClient.Factories;
 using Jh.Data.Sql.Replication.SqlClient.IntegrationTest.TestModels;
 using Moq;
 using System;
@@ -27,7 +28,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
             _logMock = new Mock<ILog>();
             _connectionString = ConfigurationManager.ConnectionStrings["TestDbServerConnectionString"].ConnectionString;
             _testDatabaseProvider = new TestDatabaseProvider(_connectionString);
-            _testedTableSchemaAnalyzer = new TableSchemaAnalyzer(_connectionString, _logMock.Object);
+            _testedTableSchemaAnalyzer = new TableSchemaAnalyzer(_connectionString, _logMock.Object, new SqlCommandFactory());
         }
 
         const string CMD_CREATE_TABLE_WITH_PRIMARY_KEY_WITHOUT_IDENTITY = @"USE [{0}]

@@ -1,5 +1,6 @@
 ﻿using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
+using Jh.Data.Sql.Replication.SqlClient.Factories;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -15,9 +16,11 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
     public class ForeignKeysDropCreateScriptProvider : IForeignKeysDropCreateScriptProvider
     {
         string _connectionString;
-        public ForeignKeysDropCreateScriptProvider(string connectionString)
+        ISqlCommandFactory _sqlCommandFactory;
+        public ForeignKeysDropCreateScriptProvider(string connectionString, ISqlCommandFactory sqlCommandFactory)
         {
             _connectionString = connectionString;
+            _sqlCommandFactory = sqlCommandFactory;
         }
         DropCreateScriptContainer IForeignKeysDropCreateScriptProvider.GenerateScripts(string databaseName)
         {
@@ -91,7 +94,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
                 using (SqlConnection databaseConnection = new SqlConnection(_connectionString))
                 {
                     databaseConnection.Open();
-                    SqlCommand command = new SqlCommand(sql, databaseConnection);
+                    SqlCommand command = _sqlCommandFactory.CreateSqlCommand(sql, databaseConnection);
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         if (!reader.Read())

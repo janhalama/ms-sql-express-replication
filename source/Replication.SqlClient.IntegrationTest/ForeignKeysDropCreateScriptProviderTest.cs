@@ -2,6 +2,7 @@
 using Jh.Data.Sql.Replication.SqlClient.DbTools;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.DataContracts;
 using Jh.Data.Sql.Replication.SqlClient.DbTools.Interfaces;
+using Jh.Data.Sql.Replication.SqlClient.Factories;
 using Jh.Data.Sql.Replication.SqlClient.IntegrationTest.TestModels;
 using Moq;
 using System;
@@ -30,7 +31,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.IntegrationTest
         {
             string DATABASE_NAME = _testDatabaseProvider.GenerateUniqueDatabaseName("TestReplication_ForeignConstraints");
             _testDatabaseProvider.CreateTestDatabase(DATABASE_NAME);
-            IForeignKeysDropCreateScriptProvider foreignKeysDropCreateScriptProvider = new ForeignKeysDropCreateScriptProvider(_connectionString);
+            IForeignKeysDropCreateScriptProvider foreignKeysDropCreateScriptProvider = new ForeignKeysDropCreateScriptProvider(_connectionString, new SqlCommandFactory());
             try
             {
                 Student student;
