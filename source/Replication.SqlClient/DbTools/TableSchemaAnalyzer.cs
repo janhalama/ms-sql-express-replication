@@ -93,9 +93,10 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
 
         string GetPrimaryKeyColumnName(string catalog, string schema, string table)
         {
-            try
+            using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
             {
-                using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
+
+                try
                 {
                     sqlConnection.Open();
                     string commandText = @"SELECT colUsage.COLUMN_NAME 
@@ -112,13 +113,13 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
                     else
                         return value.ToString();
                 }
+                catch (Exception ex)
+                {
+                    SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(_connectionString);
+                    _log.Error($"GetPrimaryKeyColumnName exception | db server: {connectionStringBuilder.DataSource} | table: {schema}.{catalog}.{table}", ex);
+                    throw;
+                }
             }
-            catch (Exception ex)
-            {
-                _log.Error("GetPrimaryKeyColumnName exception", ex);
-                throw;
-            }
-            
         }
 
         Table ITableSchemaAnalyzer.GetTableInfo(string database, string schema, string table)
