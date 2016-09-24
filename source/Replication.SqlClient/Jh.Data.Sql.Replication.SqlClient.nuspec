@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Jh.Data.Sql.Replication.SqlClient</id>
-    <version>1.4.0</version>
+    <version>1.4.1</version>
     <title>MS SQL Express replication library implementation</title>
     <authors>Jan Halama</authors>
     <owners>Jan Halama</owners>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/janhalama/ms-sql-express-replication</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Snapshot replication library</description>
-    <releaseNotes>SqlCommand timeout is configurable via ISqlCommandFactory</releaseNotes>
+    <releaseNotes>Extended logs</releaseNotes>
     <copyright>Copyright © Jan Halama 2016</copyright>
     <tags>Replication SQL</tags>
 	<dependencies> 
