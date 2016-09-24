@@ -67,6 +67,7 @@
     <Compile Include="DbTools\DataContracts\Table.cs" />
     <Compile Include="DbTools\Interfaces\ITableSchemaAnalyzer.cs" />
     <Compile Include="Strategies\TableSnapshotReplicationStrategy.cs" />
+    <Compile Include="Strategies\TableWithIncNonUniqueIndexStrategy.cs" />
     <Compile Include="Strategies\TableWithIncKeyUpdateLastRowReplicationStrategy.cs" />
     <Compile Include="Strategies\TableWithIncKeyReplicationStrategy.cs" />
     <Compile Include="DbTools\TableSchemaAnalyzer.cs" />
