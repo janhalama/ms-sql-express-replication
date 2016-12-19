@@ -89,6 +89,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                                                         replicationKeyColumn.Name, 
                                                                         targetDatabasePrimaryKeyMaxValue), 
                                                                         sourceDatabaseSqlConnection);
+                    _log.Debug($"TableWithIncKeyUpdateLastRowReplicationStrategy.Replicate SELECT CMD:{command.CommandText}");
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         using (SqlConnection targetDatabaseSqlConnection = new SqlConnection(_targetConnectionString))
@@ -102,39 +103,18 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                                     string identityInsertSetup = targetTable.Columns.Any(c => c.IsIdentity) ? $"SET IDENTITY_INSERT {targetTable.Schema}.{targetTable.Name} ON" : "";
                                     if (targetDatabasePrimaryKeyMaxValue != -1 && reader.Read())
                                     {
-                                        SqlCommand updateCommand = _sqlCommandFactory.CreateSqlCommand("", targetDatabaseSqlConnection, transaction);
-                                        string updateCommandText = $@"USE [{targetTable.Database}]
-                                                                      UPDATE [{targetTable.Schema}].[{targetTable.Name}]  SET ";
-                                        for (int i = 0; i < sourceTable.Columns.Length; i++)
+                                        if(Convert.ToInt64(reader[replicationKeyColumn.Name]) == targetDatabasePrimaryKeyMaxValue)
+                                            updateCmd(sourceTable, targetTable, replicationKeyColumn, targetDatabasePrimaryKeyMaxValue, reader, targetDatabaseSqlConnection, transaction);
+                                        else
                                         {
-                                            if (sourceTable.Columns[i].IsIdentity) continue;
-                                            string paramName = $"prm{i}";
-                                            updateCommandText += $"{sourceTable.Columns[i].Name} = @{paramName}" + ((i < sourceTable.Columns.Length - 1) ? "," : " ");
-                                            updateCommand.Parameters.AddWithValue(paramName, reader[sourceTable.Columns[i].Name]);
+                                            _log.Debug($"TableWithIncKeyUpdateLastRowReplicationStrategy.Replicate Last record from target database not found in source database | targetDatabasePrimaryKeyMaxValue = {targetDatabasePrimaryKeyMaxValue} | sourceDatabaseValue = {reader[replicationKeyColumn.Name]}");
+                                            insertCmd(sourceTable, targetTable, reader, targetDatabaseSqlConnection, transaction, identityInsertSetup);
                                         }
-                                        updateCommandText += string.Format(" WHERE [{0}] = {1}", replicationKeyColumn.Name, targetDatabasePrimaryKeyMaxValue);
-                                        updateCommand.CommandText = updateCommandText;
-                                        if (updateCommand.ExecuteNonQuery() != 1)
-                                            throw new ReplicationException("Replication failed. Failed to update row in target database");
                                         syncedRows++;
                                     }
                                     while (reader.Read())
                                     {
-                                        SqlCommand insertCommand = _sqlCommandFactory.CreateSqlCommand("", targetDatabaseSqlConnection, transaction);
-                                        string insertCommandText = $@"USE [{targetTable.Database}]
-                                                                      {identityInsertSetup}
-                                                                      INSERT INTO [{targetTable.Schema}].[{targetTable.Name}] ( ";
-                                        for (int i = 0; i < sourceTable.Columns.Length; i++)
-                                            insertCommandText += string.Format("[{0}]" + ((i < sourceTable.Columns.Length - 1) ? "," : ") VALUES ("), sourceTable.Columns[i].Name);
-                                        for (int i = 0; i < targetTable.Columns.Length; i++)
-                                        {
-                                            string paramName = string.Format("prm{0}", i);
-                                            insertCommandText += string.Format("@" + paramName + ((i < sourceTable.Columns.Length - 1) ? "," : ")"));
-                                            insertCommand.Parameters.AddWithValue(paramName, reader[sourceTable.Columns[i].Name]);
-                                        }
-                                        insertCommand.CommandText = insertCommandText;
-                                        if (insertCommand.ExecuteNonQuery() != 1)
-                                            throw new ReplicationException("Replication failed. Unable to insert row into target database.");
+                                        insertCmd(sourceTable, targetTable, reader, targetDatabaseSqlConnection, transaction, identityInsertSetup);
                                         syncedRows++;
                                     }
                                 }
@@ -159,6 +139,43 @@ namespace Jh.Data.Sql.Replication.SqlClient.Strategies
                 else
                     throw new ReplicationException($"Replication failed see inner exception | table {sourceTable.Schema}.{sourceTable.Name}", ex);
             }
+        }
+
+        private void updateCmd(Table sourceTable, Table targetTable, Column replicationKeyColumn, long targetDatabasePrimaryKeyMaxValue, SqlDataReader reader, SqlConnection targetDatabaseSqlConnection, SqlTransaction transaction)
+        {
+            SqlCommand updateCommand = _sqlCommandFactory.CreateSqlCommand("", targetDatabaseSqlConnection, transaction);
+            string updateCommandText = $@"USE [{targetTable.Database}]
+                                          UPDATE [{targetTable.Schema}].[{targetTable.Name}]  SET ";
+            for (int i = 0; i < sourceTable.Columns.Length; i++)
+            {
+                if (sourceTable.Columns[i].IsIdentity) continue;
+                string paramName = $"prm{i}";
+                updateCommandText += $"{sourceTable.Columns[i].Name} = @{paramName}" + ((i < sourceTable.Columns.Length - 1) ? "," : " ");
+                updateCommand.Parameters.AddWithValue(paramName, reader[sourceTable.Columns[i].Name]);
+            }
+            updateCommandText += string.Format(" WHERE [{0}] = {1}", replicationKeyColumn.Name, targetDatabasePrimaryKeyMaxValue);
+            updateCommand.CommandText = updateCommandText;
+            if (updateCommand.ExecuteNonQuery() != 1)
+                throw new ReplicationException("Replication failed. Failed to update row in target database");
+        }
+
+        private void insertCmd(Table sourceTable, Table targetTable, SqlDataReader reader, SqlConnection targetDatabaseSqlConnection, SqlTransaction transaction, string identityInsertSetup)
+        {
+            SqlCommand insertCommand = _sqlCommandFactory.CreateSqlCommand("", targetDatabaseSqlConnection, transaction);
+            string insertCommandText = $@"USE [{targetTable.Database}]
+                                                                      {identityInsertSetup}
+                                                                      INSERT INTO [{targetTable.Schema}].[{targetTable.Name}] ( ";
+            for (int i = 0; i < sourceTable.Columns.Length; i++)
+                insertCommandText += string.Format("[{0}]" + ((i < sourceTable.Columns.Length - 1) ? "," : ") VALUES ("), sourceTable.Columns[i].Name);
+            for (int i = 0; i < targetTable.Columns.Length; i++)
+            {
+                string paramName = string.Format("prm{0}", i);
+                insertCommandText += string.Format("@" + paramName + ((i < sourceTable.Columns.Length - 1) ? "," : ")"));
+                insertCommand.Parameters.AddWithValue(paramName, reader[sourceTable.Columns[i].Name]);
+            }
+            insertCommand.CommandText = insertCommandText;
+            if (insertCommand.ExecuteNonQuery() != 1)
+                throw new ReplicationException("Replication failed. Unable to insert row into target database.");
         }
     }
 }
