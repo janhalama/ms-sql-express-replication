@@ -91,6 +91,7 @@
   <ItemGroup>
     <Compile Include="ForeignKeysDropCreateScriptProviderTest.cs" />
     <Compile Include="TableSnapshotReplicationStrategyTest.cs" />
+    <Compile Include="TableWithCompositePrimaryKeyReplicationStrategyTest.cs" />
     <Compile Include="TableWithIncNonUniqueIndexStrategy.cs" />
     <Compile Include="TableWithIncKeyUpdateLastRowReplicationStrategyTest.cs" />
     <Compile Include="TableWithIncKeyReplicationStrategyTest.cs" />

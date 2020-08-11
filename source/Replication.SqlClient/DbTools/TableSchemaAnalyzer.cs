@@ -26,7 +26,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
         {
             try
             {
-                string primaryColumnName = GetPrimaryKeyColumnName(catalog, schema, table);
+                string[] primaryColumnNames = GetPrimaryKeyColumnNames(catalog, schema, table);
                 string[] foreignKeyColumnNames = GetForeignKeyColumnNames(catalog, schema, table);
                 using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
                 {
@@ -45,7 +45,7 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
                             if (!Enum.TryParse<System.Data.SqlDbType>(reader["DATA_TYPE"].ToString(), true, out columnType))
                                 throw new Exception("Failed to parse column type");
                             string columnName = reader["COLUMN_NAME"].ToString();
-                            res.Add(new Column() { Name = columnName, DataType = columnType, IsPrimaryKey = columnName == primaryColumnName, IsForeignKey = foreignKeyColumnNames.Contains(columnName), IsIdentity = (int)reader["IsIdentity"] == 1 });
+                            res.Add(new Column() { Name = columnName, DataType = columnType, IsPrimaryKey = primaryColumnNames.Contains(columnName), IsForeignKey = foreignKeyColumnNames.Contains(columnName), IsIdentity = (int)reader["IsIdentity"] == 1 });
                         }
                         return res.ToArray();
                     }
@@ -91,15 +91,15 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
             }
         }
 
-        string GetPrimaryKeyColumnName(string catalog, string schema, string table)
+        string[] GetPrimaryKeyColumnNames(string catalog, string schema, string table)
         {
             using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
             {
-
+                List<string> primaryColumns = new List<string>();
                 try
                 {
                     sqlConnection.Open();
-                    string commandText = @"SELECT colUsage.COLUMN_NAME 
+                    string commandText = @"SELECT colUsage.COLUMN_NAME as primaryColumnName
                                            FROM [{0}].INFORMATION_SCHEMA.KEY_COLUMN_USAGE as colUsage
                                            INNER JOIN [{0}].INFORMATION_SCHEMA.TABLE_CONSTRAINTS tabCon on tabCon.CONSTRAINT_NAME = colUsage.CONSTRAINT_NAME AND tabCon.CONSTRAINT_SCHEMA = colUsage.CONSTRAINT_SCHEMA 
                                            WHERE colUsage.TABLE_CATALOG = @catalog AND colUsage.TABLE_SCHEMA = @schema AND colUsage.TABLE_NAME = @table AND (tabCon.CONSTRAINT_TYPE  collate sql_latin1_general_cp1_ci_as) = 'PRIMARY KEY'";
@@ -107,11 +107,14 @@ namespace Jh.Data.Sql.Replication.SqlClient.DbTools
                     command.Parameters.AddWithValue("@catalog", catalog);
                     command.Parameters.AddWithValue("@schema", schema);
                     command.Parameters.AddWithValue("@table", table);
-                    object value = command.ExecuteScalar();
-                    if (value == null)
-                        return null;
-                    else
-                        return value.ToString();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            primaryColumns.Add(reader["primaryColumnName"].ToString());
+                        }
+                    }
+                    return primaryColumns.ToArray();
                 }
                 catch (Exception ex)
                 {
