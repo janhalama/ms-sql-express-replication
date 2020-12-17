@@ -90,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ForeignKeysDropCreateScriptProviderTest.cs" />
+    <Compile Include="CatalogAnalyzerTest.cs" />
     <Compile Include="TableSnapshotReplicationStrategyTest.cs" />
     <Compile Include="TableWithCompositePrimaryKeyReplicationStrategyTest.cs" />
     <Compile Include="TableWithIncNonUniqueIndexStrategy.cs" />
